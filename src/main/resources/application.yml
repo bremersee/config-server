@@ -1,0 +1,53 @@
+server:
+  context-path: ${app-context-path}
+  port: ${app-http-port}
+  use-forward-headers: ${use-forward-headers}
+  tomcat:
+    remote-ip-header: x-forwarded-for
+    protocol-header: x-forwarded-proto
+    port-header: x-forwarded-port
+    accesslog:
+      enabled: true
+      directory: ${log-dir}
+
+bremersee:
+  tomcat:
+    connector:
+      ajp:
+        port: ${app-ajp-port}
+        proxy-name: ${proxy-name}
+        proxy-port: ${proxy-port}
+        redirect-port: ${redirect-port}
+        scheme: ${proxy-scheme}
+        secure: ${proxy-secure}
+
+management:
+  context-path: /admin
+  security:
+    enabled: true
+    roles: 
+      - CLOUD
+
+security:
+  basic:
+    enabled: true
+  user:
+    name: cloudcomponent
+    password: changeit
+    role:
+      - CLOUD
+
+encrypt:
+  key-store:
+    location: ${encryption-key-store-location}
+    password: ${encryption-key-store-password}
+    alias: ${encryption-key-store-alias}
+    secret: ${encryption-key-store-secret}
+
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${config-uri}
+          basedir: ${config-basedir}

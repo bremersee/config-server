@@ -1,0 +1,131 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.bremersee</groupId>
+        <artifactId>bremersee-common-spring-boot-starter-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>bremersee-config-server</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>bremersee-config-server</name>
+    <description>Bremersee Spring Cloud Config Server</description>
+
+    <properties>
+        <app-name>configserver</app-name>
+        <app-context-path>/config</app-context-path>
+        <app-http-port>8888</app-http-port>
+        <app-ajp-port>8889</app-ajp-port>
+        <proxy-name>bremersee.org</proxy-name>
+        <proxy-port>443</proxy-port>
+        <redirect-port>443</redirect-port>
+        <proxy-scheme>https</proxy-scheme>
+        <proxy-secure>true</proxy-secure>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.bremersee</groupId>
+            <artifactId>bremersee-common-spring-boot-starter-tomcat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-config-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <executable>true</executable>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>${basedir}/src/assembly/${assembly-config}</descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>devel</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <use-forward-headers>false</use-forward-headers>
+
+                <app-home>${basedir}/target</app-home>
+                <log-dir>${app-home}</log-dir>
+                <config-basedir>${app-home}/basedir</config-basedir>
+                <config-uri>https://github.com/bremersee/config</config-uri>
+
+                <encryption-key-store-location>classpath:/encryption.jks</encryption-key-store-location>
+                <encryption-key-store-password>changeit</encryption-key-store-password>
+                <encryption-key-store-alias>encryption</encryption-key-store-alias>
+                <encryption-key-store-secret>${encryption-key-store-password}</encryption-key-store-secret>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>bremersee.org</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <assembly-config>linux.xml</assembly-config>
+                
+                <proxy-name>bremersee.org</proxy-name>
+                <use-forward-headers>true</use-forward-headers>
+
+                <app-home>/opt/${app-name}</app-home>
+                <log-dir>${app-home}/log</log-dir>
+                <config-basedir>${app-home}/data/basedir</config-basedir>
+                <config-uri>https://github.com/bremersee/config</config-uri>
+
+                <encryption-key-store-location>file://${app-home}/app/encryption.jks</encryption-key-store-location>
+                <encryption-key-store-password>changeit</encryption-key-store-password>
+                <encryption-key-store-alias>encryption</encryption-key-store-alias>
+                <encryption-key-store-secret>${encryption-key-store-password}</encryption-key-store-secret>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>base.bremersee.org</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <assembly-config>linux.xml</assembly-config>
+                
+                <proxy-name>base.bremersee.org</proxy-name>
+                <use-forward-headers>true</use-forward-headers>
+
+                <app-home>/opt/${app-name}</app-home>
+                <log-dir>${app-home}/log</log-dir>
+                <config-basedir>${app-home}/data/basedir</config-basedir>
+                <config-uri>https://github.com/bremersee/config</config-uri>
+
+                <encryption-key-store-location>file://${app-home}/app/encryption.jks</encryption-key-store-location>
+                <encryption-key-store-password>changeit</encryption-key-store-password>
+                <encryption-key-store-alias>encryption</encryption-key-store-alias>
+                <encryption-key-store-secret>${encryption-key-store-password}</encryption-key-store-secret>
+            </properties>
+        </profile>
+    </profiles>
+</project>
