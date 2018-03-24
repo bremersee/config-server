@@ -1,3 +1,10 @@
 spring:
   application:
-    name: ${app-name}
+    name: ${APPLICATION_NAME:config-server}
+
+encrypt:
+  key-store:
+    location: ${ENCRYPTION_KEY_STORE_LOCATION:classpath:/encryption.jks}
+    password: ${ENCRYPTION_KEY_STORE_LOCATION:changeit}
+    alias: ${ENCRYPTION_KEY_STORE_LOCATION:encryption}
+    secret: ${ENCRYPTION_KEY_STORE_LOCATION:changeit}

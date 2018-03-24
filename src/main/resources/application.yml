@@ -1,53 +1,58 @@
 server:
-  context-path: ${app-context-path}
-  port: ${app-http-port}
-  use-forward-headers: ${use-forward-headers}
+  port: ${SERVER_PORT:8888}
+  servlet:
+    context-path: /
+  use-forward-headers: true
   tomcat:
     remote-ip-header: x-forwarded-for
     protocol-header: x-forwarded-proto
     port-header: x-forwarded-port
     accesslog:
-      enabled: true
-      directory: ${log-dir}
-
-bremersee:
-  tomcat:
-    connector:
-      ajp:
-        port: ${app-ajp-port}
-        proxy-name: ${proxy-name}
-        proxy-port: ${proxy-port}
-        redirect-port: ${redirect-port}
-        scheme: ${proxy-scheme}
-        secure: ${proxy-secure}
-
-management:
-  context-path: /admin
-  security:
-    enabled: true
-    roles: 
-      - CLOUD
-
-security:
-  basic:
-    enabled: true
-  user:
-    name: cloudcomponent
-    password: changeit
-    role:
-      - CLOUD
-
-encrypt:
-  key-store:
-    location: ${encryption-key-store-location}
-    password: ${encryption-key-store-password}
-    alias: ${encryption-key-store-alias}
-    secret: ${encryption-key-store-secret}
+      enabled: false
+      directory: ${java.io.tmpdir}
 
 spring:
   cloud:
     config:
       server:
         git:
-          uri: ${config-uri}
-          basedir: ${config-basedir}
+#         this will be a local copy of the repo:
+          basedir: /tmp
+          uri: https://github.com/bremersee/config
+          default-label: master
+          ignore-local-ssh-settings: true
+          private-key: |
+                         -----BEGIN RSA PRIVATE KEY-----
+                         MIIEpAIBAAKCAQEAszmCR06LVHk/kNYV6LoYgEfHlK4rp75sCsRJ7rdAbWNED+yB
+                         ...
+                         EeBgS282jUBkXZ6WpzqHCcku3Avs3ajzsC1WaEYx0tCiBxSkiJlaLQ==
+                         -----END RSA PRIVATE KEY-----
+          host-key: AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+          host-key-algorithm: ssh-rsa
+          known-hosts-file: /opt/known_hosts
+
+---
+
+spring:
+  profiles: docker
+
+spring:
+  cloud:
+    config:
+      server:
+        git:
+#         this will be a local copy of the repo:
+          basedir: /opt/data
+          uri: https://github.com/bremersee/config
+          default-label: master
+          ignore-local-ssh-settings: true
+          private-key: |
+                         -----BEGIN RSA PRIVATE KEY-----
+                         MIIEpAIBAAKCAQEAszmCR06LVHk/kNYV6LoYgEfHlK4rp75sCsRJ7rdAbWNED+yB
+                         ...
+                         EeBgS282jUBkXZ6WpzqHCcku3Avs3ajzsC1WaEYx0tCiBxSkiJlaLQ==
+                         -----END RSA PRIVATE KEY-----
+          host-key: AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+          host-key-algorithm: ssh-rsa
+          known-hosts-file: /opt/known_hosts
+
