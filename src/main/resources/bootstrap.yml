@@ -5,7 +5,6 @@ spring:
 encrypt:
   key-store:
     location: ${ENCRYPTION_KEY_STORE_LOCATION:classpath:/encryption.jks}
-    password: ${ENCRYPTION_KEY_STORE_LOCATION:changeit}
-    alias: ${ENCRYPTION_KEY_STORE_LOCATION:encryption}
-    secret: ${ENCRYPTION_KEY_STORE_LOCATION:changeit}
-
+    password: ${ENCRYPTION_KEY_STORE_PASSWORD:changeit}
+    alias: ${ENCRYPTION_KEY_STORE_ALIAS:encryption}
+    secret: ${ENCRYPTION_KEY_STORE_SECRET:changeit}
