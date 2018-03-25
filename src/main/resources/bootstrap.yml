@@ -8,3 +8,4 @@ encrypt:
     password: ${ENCRYPTION_KEY_STORE_LOCATION:changeit}
     alias: ${ENCRYPTION_KEY_STORE_LOCATION:encryption}
     secret: ${ENCRYPTION_KEY_STORE_LOCATION:changeit}
+

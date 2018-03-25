@@ -1,7 +1,7 @@
 server:
   port: ${SERVER_PORT:8888}
   servlet:
-    context-path: /
+    context-path: ${CONTEXT_PATH:/}
   use-forward-headers: true
   tomcat:
     remote-ip-header: x-forwarded-for
@@ -9,50 +9,37 @@ server:
     port-header: x-forwarded-port
     accesslog:
       enabled: false
-      directory: ${java.io.tmpdir}
 
 spring:
   cloud:
     config:
       server:
         git:
-#         this will be a local copy of the repo:
-          basedir: /tmp
           uri: https://github.com/bremersee/config
           default-label: master
-          ignore-local-ssh-settings: true
-          private-key: |
-                         -----BEGIN RSA PRIVATE KEY-----
-                         MIIEpAIBAAKCAQEAszmCR06LVHk/kNYV6LoYgEfHlK4rp75sCsRJ7rdAbWNED+yB
-                         ...
-                         EeBgS282jUBkXZ6WpzqHCcku3Avs3ajzsC1WaEYx0tCiBxSkiJlaLQ==
-                         -----END RSA PRIVATE KEY-----
-          host-key: AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-          host-key-algorithm: ssh-rsa
-          known-hosts-file: /opt/known_hosts
 
 ---
 
 spring:
   profiles: docker
-
-spring:
   cloud:
     config:
       server:
         git:
 #         this will be a local copy of the repo:
-          basedir: /opt/data
-          uri: https://github.com/bremersee/config
-          default-label: master
-          ignore-local-ssh-settings: true
-          private-key: |
-                         -----BEGIN RSA PRIVATE KEY-----
-                         MIIEpAIBAAKCAQEAszmCR06LVHk/kNYV6LoYgEfHlK4rp75sCsRJ7rdAbWNED+yB
-                         ...
-                         EeBgS282jUBkXZ6WpzqHCcku3Avs3ajzsC1WaEYx0tCiBxSkiJlaLQ==
-                         -----END RSA PRIVATE KEY-----
-          host-key: AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-          host-key-algorithm: ssh-rsa
-          known-hosts-file: /opt/known_hosts
+          basedir: ${GIT_BASEDIR:/opt/data/basedir}
+          uri: ${GIT_URI:https://github.com/bremersee/config}
+          default-label: ${GIT_DEFAULT_LABEL:master}
+          ignore-local-ssh-settings: ${GIT_IGNORE_LOCAL_SSH_SETTINGS:false}
+          private-key: ${GIT_PRIVATE_KEY:}
+          known-hosts-file: ${GIT_KNOWN_HOSTS_FILE:/opt/known_hosts}
+  security:
+    user:
+      name: ${SECURITY_USER:user}
+      password: ${SECURITY_PASSWORD:changeit}
 
+server:
+  tomcat:
+    accesslog:
+      enabled: ${SERVER_ACCESSLOG_ENABLED:false}
+      directory: ${SERVER_ACCESSLOG_ENABLED:/opt/data/logs}

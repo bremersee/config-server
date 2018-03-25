@@ -22,7 +22,7 @@
     <java.version>1.8</java.version>
     <start-class>org.bremersee.configserver.Application</start-class>
 
-    <spring-cloud.version>Finchley.M8</spring-cloud.version>
+    <spring-cloud.version>Finchley.M9</spring-cloud.version>
 
     <checkstyle.version>8.7</checkstyle.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
@@ -152,6 +152,10 @@
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-config-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
     <dependency>
@@ -336,6 +340,10 @@
 
     <plugins>
       <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
@@ -353,116 +361,15 @@
           </execution>
         </executions>
         <configuration>
-          <repository>bremersee/config-server</repository>
+          <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
+          <repository>docker.io/bremersee/config-server</repository>
           <tag>latest</tag>
           <buildArgs>
             <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
           </buildArgs>
-          <!-- <useMavenSettingsForAuth>true</useMavenSettingsForAuth> -->
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
 
-  <!--
-  <profiles>
-    <profile>
-      <id>develop</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <docker-tag>/devel:latest</docker-tag>
-      </properties>
-    </profile>
-    <profile>
-      <id>qa</id>
-      <properties>
-        <docker-tag>/qa:latest</docker-tag>
-      </properties>
-    </profile>
-    <profile>
-      <id>production</id>
-      <properties>
-        <docker-tag>:latest</docker-tag>
-      </properties>
-    </profile>
-  </profiles>
-  -->
-
-  <!--
-  <profiles>
-    <profile>
-      <id>devel</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <use-forward-headers>false</use-forward-headers>
-
-        <app-home>${basedir}/target</app-home>
-        <log-dir>${app-home}</log-dir>
-        <config-basedir>${app-home}/basedir</config-basedir>
-        <config-uri>https://github.com/bremersee/config</config-uri>
-
-        <encryption-key-store-location>classpath:/encryption.jks</encryption-key-store-location>
-        <encryption-key-store-password>changeit</encryption-key-store-password>
-        <encryption-key-store-alias>encryption</encryption-key-store-alias>
-        <encryption-key-store-secret>${encryption-key-store-password}</encryption-key-store-secret>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>bremersee.org</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <assembly-config>linux.xml</assembly-config>
-
-        <proxy-name>bremersee.org</proxy-name>
-        <use-forward-headers>true</use-forward-headers>
-
-        <app-home>/opt/${app-name}</app-home>
-        <log-dir>${app-home}/log</log-dir>
-        <config-basedir>${app-home}/data/basedir</config-basedir>
-        <config-uri>https://github.com/bremersee/config</config-uri>
-
-        <encryption-key-store-location>file://${app-home}/app/encryption.jks
-        </encryption-key-store-location>
-        <encryption-key-store-password>changeit</encryption-key-store-password>
-        <encryption-key-store-alias>encryption</encryption-key-store-alias>
-        <encryption-key-store-secret>${encryption-key-store-password}</encryption-key-store-secret>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>base.bremersee.org</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <assembly-config>linux.xml</assembly-config>
-
-        <proxy-name>base.bremersee.org</proxy-name>
-        <use-forward-headers>true</use-forward-headers>
-
-        <app-home>/opt/${app-name}</app-home>
-        <log-dir>${app-home}/log</log-dir>
-        <config-basedir>${app-home}/data/basedir</config-basedir>
-        <config-uri>https://github.com/bremersee/config</config-uri>
-
-        <encryption-key-store-location>file://${app-home}/app/encryption.jks
-        </encryption-key-store-location>
-        <encryption-key-store-password>changeit</encryption-key-store-password>
-        <encryption-key-store-alias>encryption</encryption-key-store-alias>
-        <encryption-key-store-secret>${encryption-key-store-password}</encryption-key-store-secret>
-      </properties>
-    </profile>
-  </profiles>
-  -->
 </project>
