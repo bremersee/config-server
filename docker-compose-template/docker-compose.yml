@@ -1,0 +1,43 @@
+version: '2.1'
+services:
+
+  config-server-bremersee:
+    image: bremersee/config-server:latest
+    environment:
+      APPLICATION_NAME: config-server
+      ENCRYPTION_KEY_STORE_LOCATION: file:/etc/config-server/encryption.jks
+      ENCRYPTION_KEY_STORE_PASSWORD: changeit
+      ENCRYPTION_KEY_STORE_ALIAS: encryption
+      ENCRYPTION_KEY_STORE_SECRET: changeit
+      SERVER_PORT: 8888
+      SECURITY_USER: configclient
+      SECURITY_PASSWORD: changeit
+      GIT_BASEDIR: /var/lib/config-server/basedir
+      GIT_URI: https://github.com/bremersee/config
+      GIT_DEFAULT_LABEL: master
+      GIT_IGNORE_LOCAL_SSH_SETTINGS: 'true'
+      GIT_KNOWN_HOSTS_FILE: file:/etc/config-server/known_hosts
+      GIT_PRIVATE_KEY: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEowIBAAKCAQEAreqj2r+rsQOVJFyB8yseU5qJSYSsAoQUgKQwuEv4IX/ynOhF
+        ...
+        I93TSA+JzccKseXA7CJDxT76SRwZwAQ2X7QXrvwhr7gIftcGd4cg
+        -----END RSA PRIVATE KEY-----
+      GIT_HOST_KEY: AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+      GIT_HOST_ALGORITHM: ssh-rsa
+      SERVER_ACCESSLOG_ENABLED: 'true'
+      SERVER_ACCESSLOG_DIRECTORY: /var/log/config-server
+      LOG_LEVEL_SPRING: INFO
+      LOG_LEVEL_BREMERSEE: INFO
+    volumes:
+      - config-server-log-vol:/var/log/config-server
+      - config-server-basedir-vol:/var/lib/config-server/basedir
+      - ./config/encryption.jks:/etc/config-server/encryption.jks
+      - ./config/known_hosts:/etc/config-server/known_hosts
+    restart: always
+    ports:
+      - "8888:8888"
+
+volumes:
+  config-server-log-vol:
+  config-server-basedir-vol:
