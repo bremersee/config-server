@@ -46,8 +46,13 @@ spring:
           host-key-algorithm: ${GIT_HOST_ALGORITHM:ssh-rsa}
 #          known-hosts-file: ${GIT_KNOWN_HOSTS_FILE:/etc/config-server/known_hosts}
 
+logging:
+  path: ${LOG_PATH:/var/log}
+  file:
+    max-history: ${LOG_MAX_HISTORY:25}
+
 server:
   tomcat:
     accesslog:
-      enabled: ${SERVER_ACCESSLOG_ENABLED:false}
-      directory: ${SERVER_ACCESSLOG_DIRECTORY:/var/log}
+      enabled: ${ACCESS_LOG_ENABLED:true}
+      directory: ${LOG_PATH:/var/log}

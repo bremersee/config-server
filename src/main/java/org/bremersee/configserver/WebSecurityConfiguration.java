@@ -53,14 +53,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         .httpBasic().realmName(env.getProperty("spring.application.name", "config-server"))
         .and()
         .authorizeRequests()
-        .anyRequest().authenticated()
-        .and()
-        .formLogin()
-        .loginPage("/login")
-        .permitAll()
-        .and()
-        .logout()
-        .permitAll();
+        .anyRequest().authenticated();
   }
 
   @Bean
