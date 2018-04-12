@@ -1,3 +1,7 @@
+bremersee:
+  access:
+    default-access: ${ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()}
+
 server:
   port: ${SERVER_PORT:8888}
   servlet:
