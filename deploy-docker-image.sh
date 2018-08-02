@@ -1,2 +1,7 @@
 #!/usr/bin/env bash
-mvn dockerfile:push
+VERSION="$1"
+if [ -z "$VERSION" ]; then
+    mvn -Ddockerfile.skip=false dockerfile:push
+else
+    mvn -Ddockerfile.skip=false -Ddockerfile.tag="$VERSION" dockerfile:push
+fi

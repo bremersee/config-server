@@ -49,6 +49,7 @@
     <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
     <dockerfile-maven-version>1.4.0</dockerfile-maven-version>
     <dockerfile.skip>true</dockerfile.skip>
+    <dockerfile.tag>latest</dockerfile.tag>
   </properties>
 
   <scm>
@@ -371,7 +372,7 @@
           <skip>${dockerfile.skip}</skip>
           <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
           <repository>docker.io/bremersee/config-server</repository>
-          <tag>${project.version}</tag>
+          <tag>${dockerfile.tag}</tag>
           <buildArgs>
             <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
           </buildArgs>
