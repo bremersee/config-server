@@ -32,6 +32,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 /**
+ * Extended spring boot web security configuration:
+ * <ul>
+ * <li>Disables CSRF
+ * <li>Enables Basic Authentication with {@code spring.security.user.name}
+ * and {@code spring.security.user.password}
+ * <li>Enables free access based on Spring's expression language with property
+ * {@code bremersee.access.default-access}, default is {@code hasIpAddress('127.0.0.1') or
+ * hasIpAddress('::1') or isAuthenticated()}
+ * </ul>
+ *
  * @author Christian Bremer
  */
 @Configuration
@@ -52,7 +62,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
-        .csrf().disable()
+        .csrf().disable() // NOSONAR
         .httpBasic().realmName(env.getProperty("spring.application.name", "config-server"))
         .and()
         .authorizeRequests()
@@ -60,6 +70,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         .access(env.getProperty("bremersee.access.default-access", DEFAULT_ACCESS));
   }
 
+  /**
+   * Creates an in-memory user details service with user that is configured with {@code
+   * spring.security.user.name} and {@code spring.security.user.password}.
+   *
+   * @return the user details service for the basic authentication
+   */
   @Bean
   @Override
   public UserDetailsService userDetailsService() {

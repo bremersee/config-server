@@ -3,7 +3,7 @@
     {
       "name": "bremersee.access.default-access",
       "type": "java.lang.String",
-      "description": "The access exprerssion.",
+      "description": "The access expression to get access to the server without authentication.",
       "defaultValue": "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()"
     }
   ]

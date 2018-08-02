@@ -26,6 +26,8 @@ import org.springframework.cloud.config.server.EnableConfigServer;
 import org.springframework.core.env.Environment;
 
 /**
+ * Spring boot application starter.
+ *
  * @author Christian Bremer
  */
 @SpringBootApplication
@@ -38,6 +40,11 @@ public class Application implements CommandLineRunner {
   @Autowired
   private Environment env;
 
+  /**
+   * Starts the spring boot application.
+   *
+   * @param args application arguments
+   */
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
   }
@@ -84,7 +91,6 @@ public class Application implements CommandLineRunner {
         env.getProperty("server.tomcat.accesslog.enabled", "null"));
     LOG.info("server.tomcat.accesslog.directory: {}",
         env.getProperty("server.tomcat.accesslog.directory", "null"));
-
   }
 
 }

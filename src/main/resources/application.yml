@@ -19,8 +19,8 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/bremersee/config
-          default-label: master
+          uri: ${GIT_URI:https://github.com/bremersee/config}
+          default-label: ${GIT_DEFAULT_LABEL:master}
   security:
     user:
       name: ${SECURITY_USER:user}
