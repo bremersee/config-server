@@ -1,6 +1,13 @@
 bremersee:
   access:
-    default-access: ${ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()}
+    application-access: ${APPLICATION_ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1')}
+    actuator-access: ${ACTUATOR_ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1')}
+    client-user-name: ${CLIENT_USER_NAME:user}
+    client-user-password: ${CLIENT_USER_PASSWORD:changeit}
+    actuator-user-name: ${ACTUATOR_USER_NAME:}
+    actuator-user-password: ${ACTUATOR_USER_PASSWORD:}
+    admin-user-name: ${ADMIN_USER_NAME:}
+    admin-user-password: ${ADMIN_USER_PASSWORD}
 
 server:
   port: ${SERVER_PORT:8888}
@@ -14,6 +21,12 @@ server:
     accesslog:
       enabled: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 spring:
   cloud:
     config:
@@ -21,11 +34,6 @@ spring:
         git:
           uri: ${GIT_URI:https://github.com/bremersee/config}
           default-label: ${GIT_DEFAULT_LABEL:master}
-  security:
-    user:
-      name: ${SECURITY_USER:user}
-      password: ${SECURITY_PASSWORD:changeit}
-      roles: ${SECURITY_ROLE:CONFIG_CLIENT}
 
 logging:
   level:

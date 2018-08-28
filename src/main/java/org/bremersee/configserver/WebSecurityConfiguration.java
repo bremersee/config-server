@@ -16,9 +16,12 @@
 
 package org.bremersee.configserver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.boot.actuate.info.InfoEndpoint;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -35,44 +38,49 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
  * Extended spring boot web security configuration:
  * <ul>
  * <li>Disables CSRF
- * <li>Enables Basic Authentication with {@code spring.security.user.name}
- * and {@code spring.security.user.password}
- * <li>Enables free access based on Spring's expression language with property
- * {@code bremersee.access.default-access}, default is {@code hasIpAddress('127.0.0.1') or
- * hasIpAddress('::1') or isAuthenticated()}
+ * <li>Enables Basic Authentication with for users configured with {@link WebSecurityConfiguration}
+ * <li>Enables free access based on IP addresses configured with {@link WebSecurityConfiguration}
  * </ul>
  *
  * @author Christian Bremer
  */
 @Configuration
+@EnableConfigurationProperties(WebSecurityProperties.class)
+@Slf4j
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(WebSecurityConfiguration.class);
+  private final Environment env;
 
-  private static final String DEFAULT_ACCESS = "hasIpAddress('127.0.0.1') "
-      + "or hasIpAddress('::1') or isAuthenticated()";
-
-  private Environment env;
+  private final WebSecurityProperties properties;
 
   @Autowired
-  public WebSecurityConfiguration(Environment env) {
+  public WebSecurityConfiguration(Environment env, WebSecurityProperties properties) {
     this.env = env;
+    this.properties = properties;
   }
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
+    final String appName = env.getProperty("spring.application.name", "config-server");
     http
-        .csrf().disable() // NOSONAR
-        .httpBasic().realmName(env.getProperty("spring.application.name", "config-server"))
-        .and()
         .authorizeRequests()
-        .anyRequest()
-        .access(env.getProperty("bremersee.access.default-access", DEFAULT_ACCESS));
+        .requestMatchers(EndpointRequest.to(InfoEndpoint.class))
+        .permitAll()
+        .requestMatchers(EndpointRequest.to(HealthEndpoint.class))
+        .permitAll()
+        .requestMatchers(EndpointRequest.toAnyEndpoint())
+        .access(properties.buildActuatorAccess())
+        .antMatchers("/**")
+        .access(properties.buildApplicationAccess())
+        .and()
+        .csrf().disable()
+        .userDetailsService(userDetailsService())
+        .httpBasic().realmName(appName);
   }
 
   /**
-   * Creates an in-memory user details service with user that is configured with {@code
-   * spring.security.user.name} and {@code spring.security.user.password}.
+   * Creates an in-memory user details service based on the users configured in {@link
+   * WebSecurityConfiguration}
    *
    * @return the user details service for the basic authentication
    */
@@ -80,19 +88,17 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Override
   public UserDetailsService userDetailsService() {
 
-    final String username = env.getProperty("spring.security.user.name", "user");
-    final String password = env.getProperty("spring.security.user.password", "changeit");
-    final String role = env.getProperty("spring.security.user.roles", "CONFIG_CLIENT");
-    LOG.debug("Login user: username = {}, password = {}, roles = {}",
-        username, password, role);
-
+    log.info("Building user details service with {}", properties);
     final PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    final UserDetails user = User.builder()
-        .username(username)
-        .password(password)
-        .roles(role)
-        .passwordEncoder(encoder::encode)
-        .build();
-    return new InMemoryUserDetailsManager(user);
+    final UserDetails[] userDetails = properties.buildUsers().stream().map(
+        simpleUser -> User.builder()
+            .username(simpleUser.getName())
+            .password(simpleUser.getPassword())
+            .authorities(
+                simpleUser.getAuthorities().toArray(new String[0]))
+            .passwordEncoder(encoder::encode)
+            .build())
+        .toArray(UserDetails[]::new);
+    return new InMemoryUserDetailsManager(userDetails);
   }
 }
