@@ -9,26 +9,25 @@ This config server is more or less a plain Spring Cloud Config Server:
 </dependency>
 ```
 
-It's resources are protected with Basic Authentication. You can set user name and password via
-the Spring Boot configuration (or via the environment variables SECURITY_USER and 
-SECURITY_PASSWORD):
-
-```yaml
-spring:
-  security:
-    user:
-      name: ${SECURITY_USER:user}
-      password: ${SECURITY_PASSWORD:changeit}
-```
-
-If you want to grant access to the resources of the server without authentication, you can define
-the rules with Spring's Expression Language:
+It's resources are protected with Basic Authentication. You can define three users: 
+A client user can encrypt and decrypt property values and retrieve configuration,
+an actuator user can access the actuator endpoints and an administration user can do both.
 
 ```yaml
 bremersee:
   access:
-    default-access: ${ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1') or isAuthenticated()}
+    application-access: ${APPLICATION_ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1')}
+    actuator-access: ${ACTUATOR_ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1')}
+    client-user-name: ${CLIENT_USER_NAME:user}
+    client-user-password: ${CLIENT_USER_PASSWORD:changeit}
+    actuator-user-name: ${ACTUATOR_USER_NAME:}
+    actuator-user-password: ${ACTUATOR_USER_PASSWORD:}
+    admin-user-name: ${ADMIN_USER_NAME:}
+    admin-user-password: ${ADMIN_USER_PASSWORD:}
 ```
+
+Via 'application-access' and 'actuator-access' you can grant access to the resources of the server 
+without authentication.
 
 ## Configuration
 
