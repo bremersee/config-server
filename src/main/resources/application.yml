@@ -7,7 +7,7 @@ bremersee:
     actuator-user-name: ${ACTUATOR_USER_NAME:}
     actuator-user-password: ${ACTUATOR_USER_PASSWORD:}
     admin-user-name: ${ADMIN_USER_NAME:}
-    admin-user-password: ${ADMIN_USER_PASSWORD}
+    admin-user-password: ${ADMIN_USER_PASSWORD:}
 
 server:
   port: ${SERVER_PORT:8888}
