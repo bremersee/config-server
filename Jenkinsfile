@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'mvn -Ddockerfile.skip=false clean package'
+        sh 'mvn clean compile'
       }
     }
     stage('Test') {
@@ -13,7 +13,7 @@ pipeline {
     }
     stage('Deploy') {
       steps {
-        sh 'mvn -Ddockerfile.skip=false dockerfile:push'
+        sh 'mvn -DskipTests -Ddockerfile.skip=false package dockerfile:push'
       }
     }
     stage('Site') {
