@@ -18,7 +18,7 @@ pipeline {
     }
     stage('Deploy latest') {
       steps {
-        sh 'mvn -Ddockerfile.skip=false -Ddockerfile.tag=latest dockerfile:push'
+        sh 'mvn -DskipTests -Ddockerfile.skip=false -Ddockerfile.tag=latest package dockerfile:push'
       }
     }
     stage('Site') {
