@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'mvn clean compile'
+        sh 'mvn -Ddockerfile.skip=false clean package'
       }
     }
     stage('Test') {
