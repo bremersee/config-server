@@ -77,7 +77,7 @@ public class WebSecurityProperties {
    * @return the string
    */
   String buildApplicationAccess() {
-    return buildAccess(applicationAccess);
+    return buildAccess(applicationAccess, ROLE_APPLICATION_EXPRESSION);
   }
 
   /**
@@ -86,14 +86,14 @@ public class WebSecurityProperties {
    * @return the string
    */
   String buildActuatorAccess() {
-    return buildAccess(actuatorAccess);
+    return buildAccess(actuatorAccess, ROLE_ACTUATOR_EXPRESSION);
   }
 
-  private String buildAccess(final String access) {
+  private String buildAccess(final String access, final String expression) {
     if (!StringUtils.hasText(access)) {
-      return ROLE_ACTUATOR_EXPRESSION;
-    } else if (!access.contains(ROLE_ACTUATOR_EXPRESSION)) {
-      return access + " or " + ROLE_ACTUATOR_EXPRESSION;
+      return expression;
+    } else if (!access.contains(expression)) {
+      return access + " or " + expression;
     }
     return access;
   }

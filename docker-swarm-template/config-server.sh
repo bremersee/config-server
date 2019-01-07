@@ -3,7 +3,7 @@ docker service create \
   --replicas 1 \
   --name config-server \
   --hostname config-server \
-  --network ingress \
+  --network commonnet \
   --publish=8888:8888 \
   --secret source=config-server-encryption.jks,target=/etc/config-server/encryption.jks \
   --secret config-server-encryption-keystore-password \
