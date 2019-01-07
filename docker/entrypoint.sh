@@ -42,3 +42,5 @@ env_secrets_expand() {
 }
 
 env_secrets_expand
+
+java -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /opt/app.jar
