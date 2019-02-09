@@ -3,12 +3,13 @@ docker service create \
   --replicas 1 \
   --name config-server \
   --hostname config-server \
-  --network commonnet \
+  --network proxy \
   --publish=8888:8888 \
   --secret source=config-server-encryption.jks,target=/etc/config-server/encryption.jks \
   --secret config-server-encryption-keystore-password \
   --secret config-server-client-user-password \
   --secret actuator-password \
+  --secret admin-password \
   --secret git-private-key \
   --mount type=volume,source=config-server-log-vol,target=/var/log/config-server \
   --mount type=volume,source=config-server-basedir-vol,target=/var/lib/config-server/basedir \
@@ -16,9 +17,10 @@ docker service create \
   --restart-max-attempts 10 \
   --restart-window 60s \
   --update-delay 10s \
-  --constraint 'node.role == manager' \
+  --constraint 'node.role == worker' \
   -e APPLICATION_NAME='config-server' \
   -e SERVER_PORT='8888' \
+  -e APPLICATION_ACCESS="hasIpAddress('127.0.0.1/32') or hasIpAddress('10.0.0.0/16') \
   -e ENCRYPTION_KEY_STORE_LOCATION='file:/etc/config-server/encryption.jks' \
   -e ENCRYPTION_KEY_STORE_PASSWORD='{{"{{DOCKER-SECRET:config-server-encryption-keystore-password}}"}}' \
   -e ENCRYPTION_KEY_STORE_ALIAS='encryption' \
@@ -27,6 +29,8 @@ docker service create \
   -e CLIENT_USER_PASSWORD='{{"{{DOCKER-SECRET:config-server-client-user-password}}"}}' \
   -e ACTUATOR_USER_NAME='actuator' \
   -e ACTUATOR_USER_PASSWORD='{{"{{DOCKER-SECRET:actuator-password}}"}}' \
+  -e ADMIN_USER_NAME='admin' \
+  -e ADMIN_USER_PASSWORD='{{"{{DOCKER-SECRET:admin-password}}"}}' \
   -e GIT_BASEDIR='/var/lib/config-server/basedir' \
   -e GIT_URI='https://github.com/bremersee/config' \
   -e GIT_DEFAULT_LABEL='master' \

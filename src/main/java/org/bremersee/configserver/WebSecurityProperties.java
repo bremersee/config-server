@@ -54,10 +54,10 @@ public class WebSecurityProperties {
   private static final String ROLE_ACTUATOR_EXPRESSION = "hasAuthority('" + ROLE_ACTUATOR + "')";
 
   private String applicationAccess =
-      "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or " + ROLE_APPLICATION_EXPRESSION;
+      "hasIpAddress('127.0.0.1/32') or hasIpAddress('::1') or " + ROLE_APPLICATION_EXPRESSION;
 
   private String actuatorAccess =
-      "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or " + ROLE_ACTUATOR_EXPRESSION;
+      "hasIpAddress('127.0.0.1/32') or hasIpAddress('::1') or " + ROLE_ACTUATOR_EXPRESSION;
 
   private String clientUserName;
 
