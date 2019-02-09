@@ -33,7 +33,7 @@
     <dockerfile.skip>true</dockerfile.skip>
     <dockerfile.tag>${project.version}</dockerfile.tag>
 
-    <spring-cloud.version>Greenwich.RC2</spring-cloud.version>
+    <spring-cloud.version>Greenwich.RELEASE</spring-cloud.version>
 
     <plantuml.version>1.2018.11</plantuml.version>
     <wagon-webdav-jackrabbit.version>3.0.0</wagon-webdav-jackrabbit.version>
