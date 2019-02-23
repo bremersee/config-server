@@ -20,7 +20,7 @@ docker service create \
   --constraint 'node.role == worker' \
   -e APPLICATION_NAME='config-server' \
   -e SERVER_PORT='8888' \
-  -e APPLICATION_ACCESS="hasIpAddress('127.0.0.1/32') or hasIpAddress('10.0.0.0/16') \
+  -e APPLICATION_ACCESS="hasIpAddress('127.0.0.1/32') or hasIpAddress('10.0.0.0/16')" \
   -e ENCRYPTION_KEY_STORE_LOCATION='file:/etc/config-server/encryption.jks' \
   -e ENCRYPTION_KEY_STORE_PASSWORD='{{"{{DOCKER-SECRET:config-server-encryption-keystore-password}}"}}' \
   -e ENCRYPTION_KEY_STORE_ALIAS='encryption' \
