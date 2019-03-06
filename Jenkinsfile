@@ -1,31 +1,56 @@
 pipeline {
-  agent {
-    label 'maven'
-  }
+  agent none
   stages {
     stage('Build') {
+      agent {
+        label 'maven'
+      }
       steps {
         sh 'mvn clean compile'
       }
     }
     stage('Test') {
+      agent {
+        label 'maven'
+      }
       steps {
         sh 'mvn test'
       }
     }
-    stage('Deploy') {
+    stage('Push') {
+      agent {
+        label 'maven'
+      }
       steps {
         sh 'mvn -DskipTests -Ddockerfile.skip=false package dockerfile:push'
       }
     }
-    stage('Deploy latest') {
+    stage('Push latest') {
+      agent {
+        label 'maven'
+      }
       steps {
         sh 'mvn -DskipTests -Ddockerfile.skip=false -Ddockerfile.tag=latest package dockerfile:push'
       }
     }
     stage('Site') {
+      agent {
+        label 'maven'
+      }
       steps {
         sh 'mvn site-deploy'
+      }
+    }
+    stage('DeployOnDev') {
+      agent {
+        label 'dev-swarm'
+      }
+      when {
+        branch 'develop'
+      }
+      steps {
+        echo 'Deploying docker image.'
+        sh 'docker ps'
       }
     }
   }
