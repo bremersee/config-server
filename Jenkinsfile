@@ -1,46 +1,6 @@
 pipeline {
   agent none
   stages {
-    stage('Build') {
-      agent {
-        label 'maven'
-      }
-      steps {
-        sh 'mvn clean compile'
-      }
-    }
-    stage('Test') {
-      agent {
-        label 'maven'
-      }
-      steps {
-        sh 'mvn test'
-      }
-    }
-    stage('Push') {
-      agent {
-        label 'maven'
-      }
-      steps {
-        sh 'mvn -DskipTests -Ddockerfile.skip=false package dockerfile:push'
-      }
-    }
-    stage('Push latest') {
-      agent {
-        label 'maven'
-      }
-      steps {
-        sh 'mvn -DskipTests -Ddockerfile.skip=false -Ddockerfile.tag=latest package dockerfile:push'
-      }
-    }
-    stage('Site') {
-      agent {
-        label 'maven'
-      }
-      steps {
-        sh 'mvn site-deploy'
-      }
-    }
     stage('DeployOnDev') {
       agent {
         label 'dev-swarm'
@@ -50,7 +10,9 @@ pipeline {
       }
       steps {
         echo 'Deploying docker image.'
-        sh 'docker ps'
+        def pom = readMavenPom file: 'pom.xml'
+        echo "${pom.version}"
+        sh 'docker service ls'
       }
     }
   }
