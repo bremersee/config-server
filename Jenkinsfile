@@ -8,9 +8,10 @@ pipeline {
       when {
         branch 'develop'
       }
+      def pom = readMavenPom file: 'pom.xml'
       steps {
         echo 'Deploying docker image.'
-        def pom = readMavenPom file: 'pom.xml'
+
         echo "${pom.version}"
         sh 'docker service ls'
       }
