@@ -1,5 +1,11 @@
 pipeline {
   agent none
+  environment {
+    SERVICE_NAME='config-server'
+    DOCKER_IMAGE='bremersee/config-server'
+    DEV_TAG='latest'
+    PROD_TAF='release'
+  }
   stages {
     stage('Build') {
       agent {
@@ -29,6 +35,9 @@ pipeline {
       agent {
         label 'maven'
       }
+      when {
+        branch 'develop'
+      }
       steps {
         sh 'mvn -DskipTests -Ddockerfile.skip=false -Ddockerfile.tag=latest package dockerfile:push'
       }
@@ -49,8 +58,8 @@ pipeline {
         branch 'develop'
       }
       steps {
-        echo 'Deploying docker image.'
-        sh 'docker service update --image bremersee/config-server:latest config-server'
+        echo 'Updating service ${SERVICE_NAME} docker image ${DOCKER_IMAGE}:${DEV_TAG}.'
+        sh 'docker service update --image ${DOCKER_IMAGE}:${DEV_TAG} ${SERVICE_NAME}'
       }
     }
   }
