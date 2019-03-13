@@ -31,6 +31,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.StringUtils;
 
 /**
+ * The web security properties.
+ *
  * @author Christian Bremer
  */
 @ConfigurationProperties(prefix = "bremersee.access")
@@ -52,10 +54,10 @@ public class WebSecurityProperties {
   private static final String ROLE_ACTUATOR_EXPRESSION = "hasAuthority('" + ROLE_ACTUATOR + "')";
 
   private String applicationAccess =
-      "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or " + ROLE_APPLICATION_EXPRESSION;
+      "hasIpAddress('127.0.0.1/32') or hasIpAddress('::1') or " + ROLE_APPLICATION_EXPRESSION;
 
   private String actuatorAccess =
-      "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or " + ROLE_ACTUATOR_EXPRESSION;
+      "hasIpAddress('127.0.0.1/32') or hasIpAddress('::1') or " + ROLE_ACTUATOR_EXPRESSION;
 
   private String clientUserName;
 
@@ -69,24 +71,38 @@ public class WebSecurityProperties {
 
   private String adminUserPassword;
 
+  /**
+   * Build application access expression.
+   *
+   * @return the string
+   */
   String buildApplicationAccess() {
-    if (!StringUtils.hasText(applicationAccess)) {
-      return ROLE_APPLICATION_EXPRESSION;
-    } else if (!applicationAccess.contains(ROLE_APPLICATION_EXPRESSION)) {
-      return applicationAccess + " or " + ROLE_APPLICATION_EXPRESSION;
-    }
-    return applicationAccess;
+    return buildAccess(applicationAccess, ROLE_APPLICATION_EXPRESSION);
   }
 
+  /**
+   * Build actuator access expression.
+   *
+   * @return the string
+   */
   String buildActuatorAccess() {
-    if (!StringUtils.hasText(actuatorAccess)) {
-      return ROLE_ACTUATOR_EXPRESSION;
-    } else if (!actuatorAccess.contains(ROLE_ACTUATOR_EXPRESSION)) {
-      return actuatorAccess + " or " + ROLE_ACTUATOR_EXPRESSION;
-    }
-    return actuatorAccess;
+    return buildAccess(actuatorAccess, ROLE_ACTUATOR_EXPRESSION);
   }
 
+  private String buildAccess(final String access, final String expression) {
+    if (!StringUtils.hasText(access)) {
+      return expression;
+    } else if (!access.contains(expression)) {
+      return access + " or " + expression;
+    }
+    return access;
+  }
+
+  /**
+   * Build users.
+   *
+   * @return the users
+   */
   List<SimpleUser> buildUsers() {
     List<SimpleUser> users = new ArrayList<>(3);
     if (StringUtils.hasText(clientUserName)) {
@@ -101,6 +117,9 @@ public class WebSecurityProperties {
     return users;
   }
 
+  /**
+   * The simple user.
+   */
   @Getter
   @Setter
   @ToString(exclude = "password")
@@ -116,6 +135,13 @@ public class WebSecurityProperties {
 
     private List<String> authorities = new ArrayList<>();
 
+    /**
+     * Instantiates a new simple user.
+     *
+     * @param name        the name
+     * @param password    the password
+     * @param authorities the authorities
+     */
     SimpleUser(String name, String password, String... authorities) {
       this.name = name;
       this.password = password;

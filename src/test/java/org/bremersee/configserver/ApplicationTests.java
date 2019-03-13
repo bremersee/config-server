@@ -22,15 +22,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * @author Christian Bremer
+ * The application tests.
  *
+ * @author Christian Bremer
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
 public class ApplicationTests {
 
-    @Test
-    public void contextLoads() {
-    }
+  /**
+   * Context loads.
+   */
+  @Test
+  public void contextLoads() {
+  }
 
 }

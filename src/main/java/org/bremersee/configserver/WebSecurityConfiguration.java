@@ -38,7 +38,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
  * Extended spring boot web security configuration:
  * <ul>
  * <li>Disables CSRF
- * <li>Enables Basic Authentication with for users configured with {@link WebSecurityConfiguration}
+ * <li>Enables Basic Authentication for users configured with {@link WebSecurityConfiguration}
  * <li>Enables free access based on IP addresses configured with {@link WebSecurityConfiguration}
  * </ul>
  *

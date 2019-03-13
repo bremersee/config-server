@@ -1,7 +1,7 @@
 bremersee:
   access:
-    application-access: ${APPLICATION_ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1')}
-    actuator-access: ${ACTUATOR_ACCESS:hasIpAddress('127.0.0.1') or hasIpAddress('::1')}
+    application-access: ${APPLICATION_ACCESS:hasIpAddress('127.0.0.1/32') or hasIpAddress('::1')}
+    actuator-access: ${ACTUATOR_ACCESS:hasIpAddress('127.0.0.1/32') or hasIpAddress('::1')}
     client-user-name: ${CLIENT_USER_NAME:user}
     client-user-password: ${CLIENT_USER_PASSWORD:changeit}
     actuator-user-name: ${ACTUATOR_USER_NAME:}
