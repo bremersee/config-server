@@ -106,14 +106,14 @@ The simplest way to start the server (after you've specified the location of the
 files) is:
 
 ```bash
-$ java -jar target/config-server-1.0.0.jar
+$ java -jar target/config-server-1.2.0-SNAPSHOT.jar
 ```
 
 For more information have a look into the Spring Boot documentation.
 
 ### Running with docker
 
-There is a docker image of this config server at docker.io: bremersee/config-server:1.2.0
+There is a docker image of this config server at docker.io: bremersee/config-server:latest
 
 If you want to run this image, a good starting point will be the templates in the directory 
 'docker-compose-template'. Create your own key store and edit the docker-compose.yml so it fits
