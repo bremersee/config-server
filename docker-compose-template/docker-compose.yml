@@ -2,7 +2,7 @@ version: '2.1'
 services:
 
   config-server-bremersee:
-    image: bremersee/config-server:1.2.0-SNAPSHOT
+    image: bremersee/config-server:1.2.0
     environment:
       APPLICATION_NAME: config-server
       ENCRYPTION_KEY_STORE_LOCATION: file:/etc/config-server/encryption.jks
