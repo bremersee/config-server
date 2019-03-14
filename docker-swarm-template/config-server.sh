@@ -43,4 +43,4 @@ docker service create \
   -e LOG_MAX_HISTORY='25' \
   -e LOG_LEVEL_SPRING='INFO' \
   -e LOG_LEVEL_BREMERSEE='INFO' \
-  bremersee/config-server:1.2.0
+  bremersee/config-server:1.2.1
