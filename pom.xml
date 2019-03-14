@@ -13,7 +13,7 @@
 
   <artifactId>config-server</artifactId>
   <groupId>org.bremersee</groupId>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
   <packaging>jar</packaging>
 
   <name>config-server</name>
@@ -40,7 +40,7 @@
     <wagon-ssh-external.version>3.0.0</wagon-ssh-external.version>
 
     <check-style-location>google_checks.xml</check-style-location>
-    <checkstyle.version>8.15</checkstyle.version>
+    <checkstyle.version>8.18</checkstyle.version>
   </properties>
 
   <developers>
