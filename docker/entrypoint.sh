@@ -1,46 +1,20 @@
 #!/bin/sh
-
-: ${ENV_SECRETS_DIR:=/run/secrets}
-
-function env_secret_debug() {
-  if [ ! -z "$ENV_SECRETS_DEBUG" ]; then
-    echo -e "\033[1m$@\033[0m"
-  fi
-}
-
-# usage: env_secret_expand VAR
-#    ie: env_secret_expand 'XYZ_DB_PASSWORD'
-# (will check for "$XYZ_DB_PASSWORD" variable value for a placeholder that defines the
-# name of the docker secret to use instead of the original value. For example:
-# XYZ_DB_PASSWORD={{DOCKER-SECRET:my-db.secret}}
-env_secret_expand() {
-  var="$1"
-  eval val=\$$var
-  if secret_name=$(expr match "$val" "{{DOCKER-SECRET:\([^}]\+\)}}$"); then
-    secret="${ENV_SECRETS_DIR}/${secret_name}"
-    env_secret_debug "Secret file for $var: $secret"
-    if [ -f "$secret" ]; then
-      val=$(cat "${secret}")
-      export "$var"="$val"
-      env_secret_debug "Expanded variable: $var=$val"
-    else
-      env_secret_debug "Secret file does not exist! $secret"
-    fi
-  fi
-}
-
-env_secrets_expand() {
-  for env_var in $(printenv | cut -f1 -d"=")
-  do
-    env_secret_expand $env_var
-  done
-
-  if [ ! -z "$ENV_SECRETS_DEBUG" ]; then
-    echo -e "\n\033[1mExpanded environment variables\033[0m"
-    printenv
-  fi
-}
-
-env_secrets_expand
-
+if [ -z "$ENCRYPTION_KEY_STORE_PASSWORD" ] && [ ! -z "$ENCRYPTION_KEY_STORE_PASSWORD_FILE" ] && [ -e $ENCRYPTION_KEY_STORE_PASSWORD_FILE ]; then
+  export ENCRYPTION_KEY_STORE_PASSWORD="$(cat $ENCRYPTION_KEY_STORE_PASSWORD_FILE)"
+fi
+if [ -z "$ENCRYPTION_KEY_STORE_SECRET" ] && [ ! -z "$ENCRYPTION_KEY_STORE_SECRET_FILE" ] && [ -e $ENCRYPTION_KEY_STORE_SECRET_FILE ]; then
+  export ENCRYPTION_KEY_STORE_SECRET="$(cat $ENCRYPTION_KEY_STORE_SECRET_FILE)"
+fi
+if [ -z "$CLIENT_USER_PASSWORD" ] && [ ! -z "$CLIENT_USER_PASSWORD_FILE" ] && [ -e $CLIENT_USER_PASSWORD_FILE ]; then
+  export CLIENT_USER_PASSWORD="$(cat $CLIENT_USER_PASSWORD_FILE)"
+fi
+if [ -z "$ACTUATOR_USER_PASSWORD" ] && [ ! -z "$ACTUATOR_USER_PASSWORD_FILE" ] && [ -e $ACTUATOR_USER_PASSWORD_FILE ]; then
+  export ACTUATOR_USER_PASSWORD="$(cat $ACTUATOR_USER_PASSWORD_FILE)"
+fi
+if [ -z "$ADMIN_USER_PASSWORD" ] && [ ! -z "$ADMIN_USER_PASSWORD_FILE" ] && [ -e $ADMIN_USER_PASSWORD_FILE ]; then
+  export ADMIN_USER_PASSWORD="$(cat $ADMIN_USER_PASSWORD_FILE)"
+fi
+if [ -z "$GIT_PRIVATE_KEY" ] && [ ! -z "$GIT_PRIVATE_KEY_FILE" ] && [ -e $GIT_PRIVATE_KEY_FILE ]; then
+  export GIT_PRIVATE_KEY="$(cat $GIT_PRIVATE_KEY_FILE)"
+fi
 java -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /opt/app.jar
