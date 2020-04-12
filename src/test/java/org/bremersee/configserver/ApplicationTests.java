@@ -16,25 +16,57 @@
 
 package org.bremersee.configserver;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 /**
  * The application tests.
  *
  * @author Christian Bremer
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+    "bremersee.access.application-access=hasIpAddress('213.136.81.244')", // disable local access
+    "bremersee.access.admin-user-name=testadmin",
+    "bremersee.access.admin-user-password=pass4admin"
+})
+@TestInstance(Lifecycle.PER_CLASS) // allows us to use @BeforeAll with a non-static method
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ApplicationTests {
 
-  /**
-   * Context loads.
-   */
+  private static final String user = "testadmin";
+
+  private static final String pass = "pass4admin";
+
+  @Autowired
+  TestRestTemplate restTemplate;
+
   @Test
-  public void contextLoads() {
+  void encryptAndDecrypt() {
+    String expected = "encrypt_me_i_am_a_secret";
+    ResponseEntity<String> response = restTemplate
+        .withBasicAuth(user, pass)
+        .postForEntity("/encrypt", expected, String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
+    String encrypted = response.getBody();
+
+    response = restTemplate
+        .withBasicAuth(user, pass)
+        .postForEntity("/decrypt", encrypted, String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(expected, response.getBody());
   }
 
 }
