@@ -1,5 +1,7 @@
 # Bremersee's Spring Cloud Config Server
 
+[![codecov](https://codecov.io/gh/bremersee/config-server/branch/master/graph/badge.svg)](https://codecov.io/gh/bremersee/config-server)
+
 This config server is more or less a plain Spring Cloud Config Server:
 
 ```xml
@@ -106,7 +108,7 @@ The simplest way to start the server (after you've specified the location of the
 files) is:
 
 ```bash
-$ java -jar target/config-server-1.3.0-SNAPSHOT.jar
+$ java -jar target/config-server-1.3.0.jar
 ```
 
 For more information have a look into the Spring Boot documentation.
@@ -219,3 +221,9 @@ The answer will be:
     ]
 }
 ```
+
+## Maven Site
+
+- [Release](https://bremersee.github.io/config-server/index.html)
+
+- [Snapshot](https://nexus.bremersee.org/repository/maven-sites/config-server/1.3.1-SNAPSHOT/index.html)
