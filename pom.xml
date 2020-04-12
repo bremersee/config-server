@@ -20,7 +20,7 @@
   <url>https://github.com/bremersee/config-server</url>
 
   <properties>
-    <github.repo>linkman</github.repo>
+    <github.repo>config-server</github.repo>
     <gh-pages-staging-dir>${project.build.directory}/staging</gh-pages-staging-dir>
 
     <start-class>org.bremersee.configserver.Application</start-class>
