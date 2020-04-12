@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 docker service create \
   --replicas 2 \
   --name config-server \
