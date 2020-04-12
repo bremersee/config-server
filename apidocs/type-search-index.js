@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"org.bremersee.configserver","l":"Application"},{"p":"org.bremersee.configserver","l":"WebSecurityConfiguration"},{"p":"org.bremersee.configserver","l":"WebSecurityProperties"}]

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebSecurityConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">config-server</a> &gt; <a href="index.source.html" class="el_package">org.bremersee.configserver</a> &gt; <span class="el_source">WebSecurityConfiguration.java</span></div><h1>WebSecurityConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.bremersee.configserver;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.boot.actuate.info.InfoEndpoint;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
+/**
+ * Extended spring boot web security configuration:
+ * &lt;ul&gt;
+ * &lt;li&gt;Disables CSRF
+ * &lt;li&gt;Enables Basic Authentication for users configured with {@link WebSecurityConfiguration}
+ * &lt;li&gt;Enables free access based on IP addresses configured with {@link WebSecurityConfiguration}
+ * &lt;/ul&gt;
+ *
+ * @author Christian Bremer
+ */
+@Configuration
+@EnableConfigurationProperties(WebSecurityProperties.class)
+<span class="fc" id="L49">@Slf4j</span>
+public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+  private final Environment env;
+
+  private final WebSecurityProperties properties;
+
+  @Autowired
+<span class="fc" id="L57">  public WebSecurityConfiguration(Environment env, WebSecurityProperties properties) {</span>
+<span class="fc" id="L58">    this.env = env;</span>
+<span class="fc" id="L59">    this.properties = properties;</span>
+<span class="fc" id="L60">  }</span>
+
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+<span class="fc" id="L64">    final String appName = env.getProperty(&quot;spring.application.name&quot;, &quot;config-server&quot;);</span>
+<span class="fc" id="L65">    http</span>
+<span class="fc" id="L66">        .authorizeRequests()</span>
+<span class="fc" id="L67">        .requestMatchers(EndpointRequest.to(InfoEndpoint.class))</span>
+<span class="fc" id="L68">        .permitAll()</span>
+<span class="fc" id="L69">        .requestMatchers(EndpointRequest.to(HealthEndpoint.class))</span>
+<span class="fc" id="L70">        .permitAll()</span>
+<span class="fc" id="L71">        .requestMatchers(EndpointRequest.toAnyEndpoint())</span>
+<span class="fc" id="L72">        .access(properties.buildActuatorAccess())</span>
+<span class="fc" id="L73">        .antMatchers(&quot;/**&quot;)</span>
+<span class="fc" id="L74">        .access(properties.buildApplicationAccess())</span>
+<span class="fc" id="L75">        .and()</span>
+<span class="fc" id="L76">        .csrf().disable()</span>
+<span class="fc" id="L77">        .userDetailsService(userDetailsService())</span>
+<span class="fc" id="L78">        .httpBasic().realmName(appName);</span>
+<span class="fc" id="L79">  }</span>
+
+  /**
+   * Creates an in-memory user details service based on the users configured in {@link
+   * WebSecurityConfiguration}
+   *
+   * @return the user details service for the basic authentication
+   */
+  @Bean
+  @Override
+  public UserDetailsService userDetailsService() {
+
+<span class="fc" id="L91">    log.info(&quot;Building user details service with {}&quot;, properties);</span>
+<span class="fc" id="L92">    final PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();</span>
+<span class="fc" id="L93">    final UserDetails[] userDetails = properties.buildUsers().stream().map(</span>
+<span class="fc" id="L94">        simpleUser -&gt; User.builder()</span>
+<span class="fc" id="L95">            .username(simpleUser.getName())</span>
+<span class="fc" id="L96">            .password(simpleUser.getPassword())</span>
+<span class="fc" id="L97">            .authorities(</span>
+<span class="fc" id="L98">                simpleUser.getAuthorities().toArray(new String[0]))</span>
+<span class="fc" id="L99">            .passwordEncoder(encoder::encode)</span>
+<span class="fc" id="L100">            .build())</span>
+<span class="fc" id="L101">        .toArray(UserDetails[]::new);</span>
+<span class="fc" id="L102">    return new InMemoryUserDetailsManager(userDetails);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
