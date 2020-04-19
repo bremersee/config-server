@@ -91,7 +91,7 @@ spring:
       server:
         git:
 #         this will be a local copy of the repo:
-          basedir: ${GIT_BASEDIR:/var/lib/config-server/basedir}
+          basedir: ${GIT_BASEDIR:/opt/basedir}
           ignore-local-ssh-settings: ${GIT_IGNORE_LOCAL_SSH_SETTINGS:false}
           private-key: ${GIT_PRIVATE_KEY:}
           host-key: ${GIT_HOST_KEY:AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==}
@@ -106,7 +106,7 @@ The simplest way to start the server (after you've specified the location of the
 files) is:
 
 ```bash
-$ java -jar target/config-server-1.3.0.jar
+$ java -jar target/config-server-1.3.1.jar
 ```
 
 For more information have a look into the Spring Boot documentation.

@@ -121,7 +121,6 @@ public class WebSecurityProperties {
    * The simple user.
    */
   @Getter
-  @Setter
   @ToString(exclude = "password")
   @EqualsAndHashCode(exclude = "password")
   @NoArgsConstructor
@@ -138,8 +137,8 @@ public class WebSecurityProperties {
     /**
      * Instantiates a new simple user.
      *
-     * @param name        the name
-     * @param password    the password
+     * @param name the name
+     * @param password the password
      * @param authorities the authorities
      */
     SimpleUser(String name, String password, String... authorities) {

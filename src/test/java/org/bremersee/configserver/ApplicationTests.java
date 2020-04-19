@@ -19,11 +19,7 @@ package org.bremersee.configserver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -38,19 +34,30 @@ import org.springframework.http.ResponseEntity;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
     "bremersee.access.application-access=hasIpAddress('213.136.81.244')", // disable local access
     "bremersee.access.admin-user-name=testadmin",
-    "bremersee.access.admin-user-password=pass4admin"
+    "bremersee.access.admin-user-password=pass4admin",
+    "bremersee.access.actuator-access=hasIpAddress('213.136.81.244')", // disable local access
+    "bremersee.access.actuator-user-name=testactuator",
+    "bremersee.access.actuator-user-password=pass4actuator"
 })
-@TestInstance(Lifecycle.PER_CLASS) // allows us to use @BeforeAll with a non-static method
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ApplicationTests {
 
   private static final String user = "testadmin";
 
   private static final String pass = "pass4admin";
 
+  private static final String actuatorUser = "testactuator";
+
+  private static final String actuatorPass = "pass4actuator";
+
+  /**
+   * The rest template.
+   */
   @Autowired
   TestRestTemplate restTemplate;
 
+  /**
+   * Encrypt and decrypt.
+   */
   @Test
   void encryptAndDecrypt() {
     String expected = "encrypt_me_i_am_a_secret";
@@ -67,6 +74,47 @@ public class ApplicationTests {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
     assertEquals(expected, response.getBody());
+  }
+
+  /**
+   * Fetch health.
+   */
+  @Test
+  void fetchHealth() {
+    ResponseEntity<String> response = restTemplate
+        .getForEntity("/actuator/health", String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  /**
+   * Fetch info.
+   */
+  @Test
+  void fetchInfo() {
+    ResponseEntity<String> response = restTemplate
+        .getForEntity("/actuator/info", String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  /**
+   * Fetch metrics.
+   */
+  @Test
+  void fetchMetrics() {
+    ResponseEntity<String> response = restTemplate
+        .withBasicAuth(actuatorUser, actuatorPass)
+        .getForEntity("/actuator/metrics", String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  /**
+   * Fetch metrics and expect unauthorized.
+   */
+  @Test
+  void fetchMetricsAndExpectUnauthorized() {
+    ResponseEntity<String> response = restTemplate
+        .getForEntity("/actuator/metrics", String.class);
+    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
   }
 
 }

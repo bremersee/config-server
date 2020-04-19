@@ -6,8 +6,8 @@ bremersee:
     client-user-password: ${CLIENT_USER_PASSWORD:changeit}
     actuator-user-name: ${ACTUATOR_USER_NAME:}
     actuator-user-password: ${ACTUATOR_USER_PASSWORD:}
-    admin-user-name: ${ADMIN_USER_NAME:admin}
-    admin-user-password: ${ADMIN_USER_PASSWORD:changeit}
+    admin-user-name: ${ADMIN_USER_NAME:}
+    admin-user-password: ${ADMIN_USER_PASSWORD:}
 
 server:
   forward-headers-strategy: native
@@ -30,6 +30,9 @@ management:
         allowed-headers: "*"
         allowed-methods: "*"
         allowed-origins: "*"
+  endpoint:
+    health:
+      show-details: always
 
 spring:
   cloud:
@@ -53,7 +56,7 @@ spring:
       server:
         git:
 #         this will be a local copy of the repo:
-          basedir: ${GIT_BASEDIR:/var/lib/config-server/basedir}
+          basedir: ${GIT_BASEDIR:/opt/basedir}
           uri: ${GIT_URI:https://github.com/bremersee/config}
           default-label: ${GIT_DEFAULT_LABEL:master}
           ignore-local-ssh-settings: ${GIT_IGNORE_LOCAL_SSH_SETTINGS:false}
@@ -64,11 +67,18 @@ spring:
 
 logging:
   file:
-    path: ${LOG_PATH:/var/log}
-    max-history: ${LOG_MAX_HISTORY:25}
+    name: ${LOG_PATH:/opt/log}/${spring.application.name:config-server}_${HOSTNAME:unknown}.log
+
+management:
+  endpoint:
+    health:
+      show-details: when_authorized
+    logfile:
+      external-file: ${logging.file.name}
 
 server:
   tomcat:
     accesslog:
       enabled: ${ACCESS_LOG_ENABLED:true}
-      directory: ${LOG_PATH:/var/log}
+      directory: ${LOG_PATH:/opt/log}
+      prefix: ${spring.application.name:config-server}_${HOSTNAME:unknown}_access_log
