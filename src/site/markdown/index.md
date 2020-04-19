@@ -106,7 +106,7 @@ The simplest way to start the server (after you've specified the location of the
 files) is:
 
 ```bash
-$ java -jar target/config-server-1.3.1-SNAPSHOT.jar
+$ java -jar target/config-server-1.3.1.jar
 ```
 
 For more information have a look into the Spring Boot documentation.
