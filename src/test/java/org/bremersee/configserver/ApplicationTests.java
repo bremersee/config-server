@@ -19,11 +19,7 @@ package org.bremersee.configserver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -40,17 +36,21 @@ import org.springframework.http.ResponseEntity;
     "bremersee.access.admin-user-name=testadmin",
     "bremersee.access.admin-user-password=pass4admin"
 })
-@TestInstance(Lifecycle.PER_CLASS) // allows us to use @BeforeAll with a non-static method
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ApplicationTests {
 
   private static final String user = "testadmin";
 
   private static final String pass = "pass4admin";
 
+  /**
+   * The rest template.
+   */
   @Autowired
   TestRestTemplate restTemplate;
 
+  /**
+   * Encrypt and decrypt.
+   */
   @Test
   void encryptAndDecrypt() {
     String expected = "encrypt_me_i_am_a_secret";

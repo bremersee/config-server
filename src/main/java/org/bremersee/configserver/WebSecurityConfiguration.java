@@ -53,6 +53,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   private final WebSecurityProperties properties;
 
+  /**
+   * Instantiates a new web security configuration.
+   *
+   * @param env the environment
+   * @param properties the security properties
+   */
   @Autowired
   public WebSecurityConfiguration(Environment env, WebSecurityProperties properties) {
     this.env = env;
@@ -79,8 +85,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   /**
-   * Creates an in-memory user details service based on the users configured in {@link
-   * WebSecurityConfiguration}
+   * Creates an in-memory user details service based on the users configured in
+   * {@link WebSecurityConfiguration}.
    *
    * @return the user details service for the basic authentication
    */
