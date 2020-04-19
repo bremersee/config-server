@@ -121,7 +121,6 @@ public class WebSecurityProperties {
    * The simple user.
    */
   @Getter
-  @Setter
   @ToString(exclude = "password")
   @EqualsAndHashCode(exclude = "password")
   @NoArgsConstructor

@@ -34,13 +34,20 @@ import org.springframework.http.ResponseEntity;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
     "bremersee.access.application-access=hasIpAddress('213.136.81.244')", // disable local access
     "bremersee.access.admin-user-name=testadmin",
-    "bremersee.access.admin-user-password=pass4admin"
+    "bremersee.access.admin-user-password=pass4admin",
+    "bremersee.access.actuator-access=hasIpAddress('213.136.81.244')", // disable local access
+    "bremersee.access.actuator-user-name=testactuator",
+    "bremersee.access.actuator-user-password=pass4actuator"
 })
 public class ApplicationTests {
 
   private static final String user = "testadmin";
 
   private static final String pass = "pass4admin";
+
+  private static final String actuatorUser = "testactuator";
+
+  private static final String actuatorPass = "pass4actuator";
 
   /**
    * The rest template.
@@ -67,6 +74,47 @@ public class ApplicationTests {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
     assertEquals(expected, response.getBody());
+  }
+
+  /**
+   * Fetch health.
+   */
+  @Test
+  void fetchHealth() {
+    ResponseEntity<String> response = restTemplate
+        .getForEntity("/actuator/health", String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  /**
+   * Fetch info.
+   */
+  @Test
+  void fetchInfo() {
+    ResponseEntity<String> response = restTemplate
+        .getForEntity("/actuator/info", String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  /**
+   * Fetch metrics.
+   */
+  @Test
+  void fetchMetrics() {
+    ResponseEntity<String> response = restTemplate
+        .withBasicAuth(actuatorUser, actuatorPass)
+        .getForEntity("/actuator/metrics", String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  /**
+   * Fetch metrics and expect unauthorized.
+   */
+  @Test
+  void fetchMetricsAndExpectUnauthorized() {
+    ResponseEntity<String> response = restTemplate
+        .getForEntity("/actuator/metrics", String.class);
+    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
   }
 
 }
