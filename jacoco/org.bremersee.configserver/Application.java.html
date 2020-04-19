@@ -16,14 +16,9 @@
 
 package org.bremersee.configserver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.config.server.EnableConfigServer;
-import org.springframework.core.env.Environment;
 
 /**
  * Spring boot application starter.
@@ -32,13 +27,7 @@ import org.springframework.core.env.Environment;
  */
 @SpringBootApplication
 @EnableConfigServer
-<span class="fc" id="L35">public class Application implements CommandLineRunner {</span>
-
-<span class="fc" id="L37">  private static final Logger LOG = LoggerFactory.getLogger(Application.class);</span>
-
-  @SuppressWarnings(&quot;SpringJavaAutowiredFieldsWarningInspection&quot;)
-  @Autowired
-  private Environment env;
+<span class="fc" id="L30">public class Application {</span>
 
   /**
    * Starts the spring boot application.
@@ -46,52 +35,8 @@ import org.springframework.core.env.Environment;
    * @param args application arguments
    */
   public static void main(String[] args) {
-<span class="nc" id="L49">    SpringApplication.run(Application.class, args);</span>
-<span class="nc" id="L50">  }</span>
-
-  @Override
-  public void run(String... args) {
-<span class="fc" id="L54">    LOG.info(&quot;##################### RUNNING #####################&quot;);</span>
-
-<span class="fc" id="L56">    LOG.info(&quot;spring.application.name: {}&quot;,</span>
-<span class="fc" id="L57">        env.getProperty(&quot;spring.application.name&quot;, &quot;null&quot;));</span>
-
-<span class="fc" id="L59">    LOG.info(&quot;encrypt.key-store.location: {}&quot;,</span>
-<span class="fc" id="L60">        env.getProperty(&quot;encrypt.key-store.location&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L61">    LOG.debug(&quot;encrypt.key-store.password: {}&quot;,</span>
-<span class="fc" id="L62">        env.getProperty(&quot;encrypt.key-store.password&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L63">    LOG.info(&quot;encrypt.key-store.alias: {}&quot;,</span>
-<span class="fc" id="L64">        env.getProperty(&quot;encrypt.key-store.alias&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L65">    LOG.debug(&quot;encrypt.key-store.secret: {}&quot;,</span>
-<span class="fc" id="L66">        env.getProperty(&quot;encrypt.key-store.secret&quot;, &quot;null&quot;));</span>
-
-<span class="fc" id="L68">    LOG.info(&quot;spring.cloud.config.server.git.basedir: {}&quot;,</span>
-<span class="fc" id="L69">        env.getProperty(&quot;spring.cloud.config.server.git.basedir&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L70">    LOG.info(&quot;spring.cloud.config.server.git.uri: {}&quot;,</span>
-<span class="fc" id="L71">        env.getProperty(&quot;spring.cloud.config.server.git.uri&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L72">    LOG.info(&quot;spring.cloud.config.server.git.default-label: {}&quot;,</span>
-<span class="fc" id="L73">        env.getProperty(&quot;spring.cloud.config.server.git.default-label&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L74">    LOG.info(&quot;spring.cloud.config.server.git.ignore-local-ssh-settings: {}&quot;,</span>
-<span class="fc" id="L75">        env.getProperty(&quot;spring.cloud.config.server.git.ignore-local-ssh-settings&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L76">    LOG.debug(&quot;spring.cloud.config.server.git.private-key: {}&quot;,</span>
-<span class="fc" id="L77">        env.getProperty(&quot;spring.cloud.config.server.git.private-key&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L78">    LOG.info(&quot;spring.cloud.config.server.git.host-key: {}&quot;,</span>
-<span class="fc" id="L79">        env.getProperty(&quot;spring.cloud.config.server.git.host-key&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L80">    LOG.info(&quot;spring.cloud.config.server.git.host-key-algorithm: {}&quot;,</span>
-<span class="fc" id="L81">        env.getProperty(&quot;spring.cloud.config.server.git.host-key-algorithm&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L82">    LOG.info(&quot;spring.cloud.config.server.git.known-hosts-file: {}&quot;,</span>
-<span class="fc" id="L83">        env.getProperty(&quot;spring.cloud.config.server.git.known-hosts-file&quot;, &quot;null&quot;));</span>
-
-<span class="fc" id="L85">    LOG.info(&quot;spring.security.user.name: {}&quot;,</span>
-<span class="fc" id="L86">        env.getProperty(&quot;spring.security.user.name&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L87">    LOG.debug(&quot;spring.security.user.password: {}&quot;,</span>
-<span class="fc" id="L88">        env.getProperty(&quot;spring.security.user.password&quot;, &quot;null&quot;));</span>
-
-<span class="fc" id="L90">    LOG.info(&quot;server.tomcat.accesslog.enabled: {}&quot;,</span>
-<span class="fc" id="L91">        env.getProperty(&quot;server.tomcat.accesslog.enabled&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L92">    LOG.info(&quot;server.tomcat.accesslog.directory: {}&quot;,</span>
-<span class="fc" id="L93">        env.getProperty(&quot;server.tomcat.accesslog.directory&quot;, &quot;null&quot;));</span>
-<span class="fc" id="L94">  }</span>
+<span class="nc" id="L38">    SpringApplication.run(Application.class, args);</span>
+<span class="nc" id="L39">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

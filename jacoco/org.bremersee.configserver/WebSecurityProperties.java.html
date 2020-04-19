@@ -39,7 +39,7 @@ import org.springframework.util.StringUtils;
 @Getter
 <span class="fc" id="L40">@Setter</span>
 <span class="fc" id="L41">@ToString(exclude = {&quot;clientUserPassword&quot;, &quot;actuatorUserPassword&quot;, &quot;adminUserPassword&quot;})</span>
-<span class="nc bnc" id="L42" title="All 70 branches missed.">@EqualsAndHashCode</span>
+<span class="pc bpc" id="L42" title="37 of 70 branches missed.">@EqualsAndHashCode</span>
 <span class="fc" id="L43">@NoArgsConstructor</span>
 <span class="fc" id="L44">@Slf4j</span>
 public class WebSecurityProperties {
@@ -61,15 +61,15 @@ public class WebSecurityProperties {
 
 <span class="fc" id="L62">  private String clientUserName;</span>
 
-<span class="nc" id="L64">  private String clientUserPassword;</span>
+<span class="fc" id="L64">  private String clientUserPassword;</span>
 
 <span class="fc" id="L66">  private String actuatorUserName;</span>
 
-<span class="nc" id="L68">  private String actuatorUserPassword;</span>
+<span class="fc" id="L68">  private String actuatorUserPassword;</span>
 
 <span class="fc" id="L70">  private String adminUserName;</span>
 
-<span class="nc" id="L72">  private String adminUserPassword;</span>
+<span class="fc" id="L72">  private String adminUserPassword;</span>
 
   /**
    * Build application access expression.
@@ -108,10 +108,10 @@ public class WebSecurityProperties {
 <span class="pc bpc" id="L108" title="1 of 2 branches missed.">    if (StringUtils.hasText(clientUserName)) {</span>
 <span class="fc" id="L109">      users.add(new SimpleUser(clientUserName, clientUserPassword, ROLE_APPLICATION));</span>
     }
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    if (StringUtils.hasText(actuatorUserName)) {</span>
-<span class="nc" id="L112">      users.add(new SimpleUser(actuatorUserName, actuatorUserPassword, ROLE_ACTUATOR));</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">    if (StringUtils.hasText(actuatorUserName)) {</span>
+<span class="fc" id="L112">      users.add(new SimpleUser(actuatorUserName, actuatorUserPassword, ROLE_ACTUATOR));</span>
     }
-<span class="pc bpc" id="L114" title="1 of 2 branches missed.">    if (StringUtils.hasText(adminUserName)) {</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">    if (StringUtils.hasText(adminUserName)) {</span>
 <span class="fc" id="L115">      users.add(new SimpleUser(adminUserName, adminUserPassword, ROLE_APPLICATION, ROLE_ACTUATOR));</span>
     }
 <span class="fc" id="L117">    return users;</span>
@@ -121,34 +121,33 @@ public class WebSecurityProperties {
    * The simple user.
    */
   @Getter
-<span class="nc" id="L124">  @Setter</span>
-<span class="nc" id="L125">  @ToString(exclude = &quot;password&quot;)</span>
-<span class="nc bnc" id="L126" title="All 22 branches missed.">  @EqualsAndHashCode(exclude = &quot;password&quot;)</span>
-<span class="nc" id="L127">  @NoArgsConstructor</span>
+<span class="fc" id="L124">  @ToString(exclude = &quot;password&quot;)</span>
+<span class="pc bpc" id="L125" title="19 of 22 branches missed.">  @EqualsAndHashCode(exclude = &quot;password&quot;)</span>
+<span class="nc" id="L126">  @NoArgsConstructor</span>
   static class SimpleUser implements Serializable, Principal {
 
     private static final long serialVersionUID = -1393400622632455935L;
 
-<span class="fc" id="L132">    private String name;</span>
+<span class="fc" id="L131">    private String name;</span>
 
-<span class="fc" id="L134">    private String password;</span>
+<span class="fc" id="L133">    private String password;</span>
 
-<span class="pc" id="L136">    private List&lt;String&gt; authorities = new ArrayList&lt;&gt;();</span>
+<span class="pc" id="L135">    private List&lt;String&gt; authorities = new ArrayList&lt;&gt;();</span>
 
     /**
      * Instantiates a new simple user.
      *
-     * @param name        the name
-     * @param password    the password
+     * @param name the name
+     * @param password the password
      * @param authorities the authorities
      */
-<span class="fc" id="L145">    SimpleUser(String name, String password, String... authorities) {</span>
-<span class="fc" id="L146">      this.name = name;</span>
-<span class="fc" id="L147">      this.password = password;</span>
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">      if (authorities != null) {</span>
-<span class="fc" id="L149">        Collections.addAll(this.authorities, authorities);</span>
+<span class="fc" id="L144">    SimpleUser(String name, String password, String... authorities) {</span>
+<span class="fc" id="L145">      this.name = name;</span>
+<span class="fc" id="L146">      this.password = password;</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">      if (authorities != null) {</span>
+<span class="fc" id="L148">        Collections.addAll(this.authorities, authorities);</span>
       }
-<span class="fc" id="L151">    }</span>
+<span class="fc" id="L150">    }</span>
   }
 
 }
