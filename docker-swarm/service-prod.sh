@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 docker service create \
-  --replicas $2 \
+  --replicas 2 \
   --name config-server \
   --network proxy \
   --publish=8888:80 \
@@ -42,4 +42,4 @@ docker service create \
   -e ACCESS_LOG_ENABLED='false' \
   -e LOG_LEVEL_SPRING='INFO' \
   -e LOG_LEVEL_BREMERSEE='INFO' \
-  $1
+  bremersee/config-server:snapshot

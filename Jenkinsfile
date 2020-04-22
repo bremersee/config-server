@@ -87,7 +87,7 @@ pipeline {
           else
             echo "Creating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${DEV_TAG}."
             chmod 755 docker-swarm/service.sh
-            docker-swarm/service.sh "${DOCKER_IMAGE}:${DEV_TAG}"
+            docker-swarm/service.sh "${DOCKER_IMAGE}:${DEV_TAG}" 1
           fi
         '''
       }
@@ -107,7 +107,7 @@ pipeline {
           else
             echo "Creating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${PROD_TAG}."
             chmod 755 docker-swarm/service.sh
-            docker-swarm/service.sh "${DOCKER_IMAGE}:${PROD_TAG}"
+            docker-swarm/service.sh "${DOCKER_IMAGE}:${PROD_TAG}" 2
           fi
         '''
       }
