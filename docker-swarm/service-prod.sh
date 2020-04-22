@@ -42,4 +42,4 @@ docker service create \
   -e ACCESS_LOG_ENABLED='false' \
   -e LOG_LEVEL_SPRING='INFO' \
   -e LOG_LEVEL_BREMERSEE='INFO' \
-  bremersee/config-server:snapshot
+  bremersee/config-server:latest
