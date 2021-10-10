@@ -9,6 +9,7 @@ pipeline {
     PUSH_RELEASE_DOCKER_IMAGE = true
     DEPLOY_SNAPSHOT_ON_SERVER = true
     DEPLOY_RELEASE_ON_SERVER = true
+    DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE = true
     SNAPSHOT_SITE = true
     RELEASE_SITE = true
   }
@@ -102,7 +103,7 @@ pipeline {
         maven 'm3'
       }
       steps {
-        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server deploy'
+        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server clean deploy'
       }
     }
     stage('Deploy release on config-server') {
@@ -120,7 +121,25 @@ pipeline {
         maven 'm3'
       }
       steps {
-        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server deploy'
+        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server clean deploy'
+      }
+    }
+    stage('Deploy release on apt repository debian-bullseye') {
+      agent {
+        label 'maven'
+      }
+      when {
+        allOf {
+          branch 'master'
+          environment name: 'DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE', value: 'true'
+        }
+      }
+      tools {
+        jdk 'jdk11'
+        maven 'm3'
+      }
+      steps {
+        sh 'mvn -B -DskipTests=true -Dhttp.protocol.expect-continue=true -Pdebian11,deploy-to-repo-debian-bullseye clean deploy'
       }
     }
     stage('Deploy snapshot site') {
