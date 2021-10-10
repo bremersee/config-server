@@ -1,0 +1,43 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+
+    <id>debian11</id>
+    <formats>
+        <format>tar.gz</format>
+        <format>zip</format>
+    </formats>
+    <baseDirectory>/</baseDirectory>
+    <files>
+        <file>
+            <source>src/main/resources/application.yml</source>
+            <outputDirectory>var/lib/spring-config-server</outputDirectory>
+            <filtered>false</filtered>
+            <fileMode>600</fileMode>
+        </file>
+        <file>
+            <source>src/main/resources/encryption.jks</source>
+            <outputDirectory>var/lib/spring-config-server</outputDirectory>
+            <filtered>false</filtered>
+            <fileMode>600</fileMode>
+        </file>
+        <file>
+            <source>src/assembly/debian11/config-server.conf</source>
+            <outputDirectory>var/lib/spring-config-server</outputDirectory>
+            <filtered>false</filtered>
+            <fileMode>600</fileMode>
+        </file>
+        <file>
+            <source>src/assembly/debian11/spring-config-server.service</source>
+            <outputDirectory>lib/systemd/system</outputDirectory>
+            <filtered>false</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>target/config-server.jar</source>
+            <outputDirectory>var/lib/spring-config-server</outputDirectory>
+            <destName>config-server.jar</destName>
+            <filtered>false</filtered>
+            <fileMode>755</fileMode>
+        </file>
+    </files>
+</assembly>

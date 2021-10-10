@@ -90,7 +90,7 @@ public class WebSecurityProperties {
   }
 
   private String buildAccess(final String access, final String expression) {
-    if (!StringUtils.hasText(access)) {
+    if (!StringUtils.hasText(access) || access.trim().equalsIgnoreCase("false")) {
       return expression;
     } else if (!access.contains(expression)) {
       return access + " or " + expression;
@@ -132,7 +132,7 @@ public class WebSecurityProperties {
 
     private String password;
 
-    private List<String> authorities = new ArrayList<>();
+    private final List<String> authorities = new ArrayList<>();
 
     /**
      * Instantiates a new simple user.

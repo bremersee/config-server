@@ -1,0 +1,21 @@
+#!/bin/bash
+
+DEBIAN_NAME="spring-config-server"
+APP_NAME="config-server"
+
+if [ -e /etc/systemd/system/$DEBIAN_NAME.service ]; then
+  /bin/systemctl stop $DEBIAN_NAME.service
+  /bin/systemctl disable $DEBIAN_NAME.service
+fi
+
+if [ -e /var/lib/$DEBIAN_NAME/$APP_NAME.conf ]; then
+  cp /var/lib/$DEBIAN_NAME/$APP_NAME.conf /var/lib/$DEBIAN_NAME/$APP_NAME.conf.user
+fi
+if [ -e /var/lib/$DEBIAN_NAME/application.yml ]; then
+  cp /var/lib/$DEBIAN_NAME/application.yml /var/lib/$DEBIAN_NAME/application.yml.user
+fi
+if [ -e /var/lib/$DEBIAN_NAME/encryption.jks ]; then
+  cp /var/lib/$DEBIAN_NAME/encryption.jks /var/lib/$DEBIAN_NAME/encryption.jks.user
+fi
+
+exit 0

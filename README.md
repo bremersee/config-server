@@ -29,7 +29,9 @@ bremersee:
 ```
 
 Via 'application-access' and 'actuator-access' you can grant access to the resources of the server 
-without authentication.
+without authentication. The default configuration allows access from localhost without authentication.
+The default behaviour can be disabled by setting 'application-access' and/or 'actuator-access' to an
+empty value ('') or to 'false'.
 
 ## Configuration
 
@@ -108,7 +110,7 @@ The simplest way to start the server (after you've specified the location of the
 files) is:
 
 ```bash
-$ java -jar target/config-server-1.3.1.jar
+$ java -jar target/config-server.jar
 ```
 
 For more information have a look into the Spring Boot documentation.
@@ -127,10 +129,10 @@ To encrypt a value of your configuration file you have to post the raw value to 
 encryption endpoint:
 
 ```bash
-curl -X POST \
-  https://config.example.org/encrypt \
-  -H 'Authorization: Basic base64(user:password)' \
-  -d my-secret-value
+curl --location --request POST 'http://localhost:8888/encrypt' \
+  --header 'Authorization: Basic dXNlcjpjaGFuZ2VpdA==' \
+  --header 'Content-Type: text/plain' \
+  --data-raw 'foobar'
 ```
 
 The answer is something like:
@@ -151,10 +153,10 @@ some:
 If you want to decrypt the cipher, you'll have to post it the decryption endpoint:
 
 ```bash
-curl -X POST \
-  https://config.example.org/decrypt \
-  -H 'Authorization: Basic base64(user:password)' \
-  -d 'AQCykFAsEFUKMakvFcsmumDsTh4rxuf8bhutyGkItUDAVgOdPbVNTMTUJwya2pot5wmPX4UEXhCShQ+aDu42CMQz4ap78QP7fdcruQYAbimbhGDmL9voyhNDCYQ6ywUQTXj8VfVo+KOL/LtQymoWljhhFHmzsXEG/cojvh0jpYKthPidWOpcmS10uMvrMgPQn9sCGGB/L1EBQjQsMGV+QnQHPn7dRhbmIlm6BJnOyrQPyUv+mqBLQEGoWxSBkm9TQPSyMHW926qpkL5gVHXzV/TDMbY3T5Te4eqv23QKTyuKMJ6usROsG1BJ1WH+fXTSt4gJtA2xJUm7DSIJfiUM0GkDqJ5A9S5uiHj0g9CptP4sXSK0HNnOiakVXU7SGEc4byA='
+curl --location --request POST 'http://localhost:8888/decrypt' \
+  --header 'Authorization: Basic dXNlcjpjaGFuZ2VpdA==' \
+  --header 'Content-Type: text/plain' \
+  --data-raw 'AQCykFAsEFUKMakvFcsmumDsTh4rxuf8bhutyGkItUDAVgOdPbVNTMTUJwya2pot5wmPX4UEXhCShQ+aDu42CMQz4ap78QP7fdcruQYAbimbhGDmL9voyhNDCYQ6ywUQTXj8VfVo+KOL/LtQymoWljhhFHmzsXEG/cojvh0jpYKthPidWOpcmS10uMvrMgPQn9sCGGB/L1EBQjQsMGV+QnQHPn7dRhbmIlm6BJnOyrQPyUv+mqBLQEGoWxSBkm9TQPSyMHW926qpkL5gVHXzV/TDMbY3T5Te4eqv23QKTyuKMJ6usROsG1BJ1WH+fXTSt4gJtA2xJUm7DSIJfiUM0GkDqJ5A9S5uiHj0g9CptP4sXSK0HNnOiakVXU7SGEc4byA='
 ```
 
 The answer should be:
@@ -187,9 +189,8 @@ If you want to get this configuration with the profile 'logfiles' from the confi
 have to call:
 
 ```bash
-curl -X GET \
-  'https://config.example.org/app/default,logfiles' \
-  -H 'Authorization: Basic base64(user:password)'
+curl --location --request GET 'http://localhost:8888/app/default,logfiles' \
+  --header 'Authorization: Basic dXNlcjpjaGFuZ2VpdA=='
 ```
 
 The answer will be:
@@ -226,4 +227,4 @@ The answer will be:
 
 - [Release](https://bremersee.github.io/config-server/index.html)
 
-- [Snapshot](https://nexus.bremersee.org/repository/maven-sites/config-server/1.3.2-SNAPSHOT/index.html)
+- [Snapshot](https://nexus.bremersee.org/repository/maven-sites/config-server/1.4.0-SNAPSHOT/index.html)

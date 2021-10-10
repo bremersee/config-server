@@ -5,6 +5,16 @@ pipeline {
     DOCKER_IMAGE='bremersee/config-server'
     DEV_TAG='snapshot'
     PROD_TAG='latest'
+    PUSH_SNAPSHOT_DOCKER_IMAGE = true
+    PUSH_RELEASE_DOCKER_IMAGE = true
+    DEPLOY_SNAPSHOT_ON_SERVER = true
+    DEPLOY_RELEASE_ON_SERVER = true
+    DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE = true
+    SNAPSHOT_SITE = true
+    RELEASE_SITE = true
+  }
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '8', artifactNumToKeepStr: '8'))
   }
   stages {
     stage('Test') {
@@ -34,12 +44,15 @@ pipeline {
         }
       }
     }
-    stage('Push snapshot') {
+    stage('Push snapshot docker image') {
       agent {
         label 'maven'
       }
       when {
-        branch 'develop'
+        allOf {
+          branch 'develop'
+          environment name: 'PUSH_SNAPSHOT_DOCKER_IMAGE', value: 'true'
+        }
       }
       tools {
         jdk 'jdk11'
@@ -53,12 +66,15 @@ pipeline {
         '''
       }
     }
-    stage('Push release') {
+    stage('Push release docker image') {
       agent {
         label 'maven'
       }
       when {
-        branch 'master'
+        allOf {
+          branch 'master'
+          environment name: 'PUSH_RELEASE_DOCKER_IMAGE', value: 'true'
+        }
       }
       tools {
         jdk 'jdk11'
@@ -72,44 +88,58 @@ pipeline {
         '''
       }
     }
-    stage('Deploy on dev-swarm') {
+    stage('Deploy snapshot on config-server') {
       agent {
-        label 'dev-swarm'
+        label 'maven'
       }
       when {
-        branch 'develop'
+        allOf {
+          branch 'develop'
+          environment name: 'DEPLOY_SNAPSHOT_ON_SERVER', value: 'true'
+        }
+      }
+      tools {
+        jdk 'jdk11'
+        maven 'm3'
       }
       steps {
-        sh '''
-          if docker service ls | grep -q ${SERVICE_NAME}; then
-            echo "Updating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${DEV_TAG}."
-            docker service update --image ${DOCKER_IMAGE}:${DEV_TAG} ${SERVICE_NAME}
-          else
-            echo "Creating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${DEV_TAG}."
-            chmod 755 docker-swarm/service.sh
-            docker-swarm/service.sh "${DOCKER_IMAGE}:${DEV_TAG}"
-          fi
-        '''
+        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server clean deploy'
       }
     }
-    stage('Deploy on prod-swarm') {
+    stage('Deploy release on config-server') {
       agent {
-        label 'prod-swarm'
+        label 'maven'
       }
       when {
-        branch 'master'
+        allOf {
+          branch 'master'
+          environment name: 'DEPLOY_RELEASE_ON_SERVER', value: 'true'
+        }
+      }
+      tools {
+        jdk 'jdk11'
+        maven 'm3'
       }
       steps {
-        sh '''
-          if docker service ls | grep -q ${SERVICE_NAME}; then
-            echo "Updating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${PROD_TAG}."
-            docker service update --image ${DOCKER_IMAGE}:${PROD_TAG} ${SERVICE_NAME}
-          else
-            echo "Creating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${PROD_TAG}."
-            chmod 755 docker-swarm/service.sh
-            docker-swarm/service.sh "${DOCKER_IMAGE}:${PROD_TAG}"
-          fi
-        '''
+        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server clean deploy'
+      }
+    }
+    stage('Deploy release on apt repository debian-bullseye') {
+      agent {
+        label 'maven'
+      }
+      when {
+        allOf {
+          branch 'master'
+          environment name: 'DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE', value: 'true'
+        }
+      }
+      tools {
+        jdk 'jdk11'
+        maven 'm3'
+      }
+      steps {
+        sh 'mvn -B -DskipTests=true -Dhttp.protocol.expect-continue=true -Pdebian11,deploy-to-repo-debian-bullseye clean deploy'
       }
     }
     stage('Deploy snapshot site') {
@@ -120,7 +150,10 @@ pipeline {
         CODECOV_TOKEN = credentials('config-server-codecov-token')
       }
       when {
-        branch 'develop'
+        allOf {
+          branch 'develop'
+          environment name: 'SNAPSHOT_SITE', value: 'true'
+        }
       }
       tools {
         jdk 'jdk11'
@@ -143,7 +176,10 @@ pipeline {
         CODECOV_TOKEN = credentials('config-server-codecov-token')
       }
       when {
-        branch 'master'
+        allOf {
+          branch 'master'
+          environment name: 'RELEASE_SITE', value: 'true'
+        }
       }
       tools {
         jdk 'jdk11'
