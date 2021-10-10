@@ -5,10 +5,10 @@ pipeline {
     DOCKER_IMAGE='bremersee/config-server'
     DEV_TAG='snapshot'
     PROD_TAG='latest'
-    PUSH_SNAPSHOT = false
-    PUSH_RELEASE = true
-    DEPLOY_SNAPSHOT = false
-    DEPLOY_RELEASE = true
+    PUSH_SNAPSHOT_DOCKER_IMAGE = true
+    PUSH_RELEASE_DOCKER_IMAGE = true
+    DEPLOY_SNAPSHOT_ON_SERVER = true
+    DEPLOY_RELEASE_ON_SERVER = true
     SNAPSHOT_SITE = true
     RELEASE_SITE = true
   }
@@ -43,14 +43,14 @@ pipeline {
         }
       }
     }
-    stage('Push snapshot') {
+    stage('Push snapshot docker image') {
       agent {
         label 'maven'
       }
       when {
         allOf {
           branch 'develop'
-          environment name: 'PUSH_SNAPSHOT', value: 'true'
+          environment name: 'PUSH_SNAPSHOT_DOCKER_IMAGE', value: 'true'
         }
       }
       tools {
@@ -65,14 +65,14 @@ pipeline {
         '''
       }
     }
-    stage('Push release') {
+    stage('Push release docker image') {
       agent {
         label 'maven'
       }
       when {
         allOf {
           branch 'master'
-          environment name: 'PUSH_RELEASE', value: 'true'
+          environment name: 'PUSH_RELEASE_DOCKER_IMAGE', value: 'true'
         }
       }
       tools {
@@ -87,50 +87,40 @@ pipeline {
         '''
       }
     }
-    stage('Deploy on dev-swarm') {
+    stage('Deploy snapshot on config-server') {
       agent {
-        label 'dev-swarm'
+        label 'maven'
       }
       when {
         allOf {
           branch 'develop'
-          environment name: 'DEPLOY_SNAPSHOT', value: 'true'
+          environment name: 'DEPLOY_SNAPSHOT_ON_SERVER', value: 'true'
         }
       }
+      tools {
+        jdk 'jdk11'
+        maven 'm3'
+      }
       steps {
-        sh '''
-          if docker service ls | grep -q ${SERVICE_NAME}; then
-            echo "Updating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${DEV_TAG}."
-            docker service update --image ${DOCKER_IMAGE}:${DEV_TAG} ${SERVICE_NAME}
-          else
-            echo "Creating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${DEV_TAG}."
-            chmod 755 docker-swarm/service.sh
-            docker-swarm/service.sh "${DOCKER_IMAGE}:${DEV_TAG}" 1
-          fi
-        '''
+        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server deploy'
       }
     }
-    stage('Deploy on prod-swarm') {
+    stage('Deploy release on config-server') {
       agent {
-        label 'prod-swarm'
+        label 'maven'
       }
       when {
         allOf {
           branch 'master'
-          environment name: 'DEPLOY_RELEASE', value: 'true'
+          environment name: 'DEPLOY_RELEASE_ON_SERVER', value: 'true'
         }
       }
+      tools {
+        jdk 'jdk11'
+        maven 'm3'
+      }
       steps {
-        sh '''
-          if docker service ls | grep -q ${SERVICE_NAME}; then
-            echo "Updating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${PROD_TAG}."
-            docker service update --image ${DOCKER_IMAGE}:${PROD_TAG} ${SERVICE_NAME}
-          else
-            echo "Creating service ${SERVICE_NAME} with docker image ${DOCKER_IMAGE}:${PROD_TAG}."
-            chmod 755 docker-swarm/service.sh
-            docker-swarm/service.sh "${DOCKER_IMAGE}:${PROD_TAG}" 2
-          fi
-        '''
+        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server deploy'
       }
     }
     stage('Deploy snapshot site') {

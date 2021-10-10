@@ -1,0 +1,8 @@
+#!/bin/bash
+
+DEBIAN_NAME="spring-config-server"
+
+/bin/systemctl stop $DEBIAN_NAME.service
+/bin/systemctl disable $DEBIAN_NAME.service
+
+exit 0
