@@ -90,7 +90,7 @@ public class WebSecurityProperties {
   }
 
   private String buildAccess(final String access, final String expression) {
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    if (!StringUtils.hasText(access)) {</span>
+<span class="pc bpc" id="L93" title="2 of 4 branches missed.">    if (!StringUtils.hasText(access) || access.trim().equalsIgnoreCase(&quot;false&quot;)) {</span>
 <span class="nc" id="L94">      return expression;</span>
 <span class="pc bpc" id="L95" title="1 of 2 branches missed.">    } else if (!access.contains(expression)) {</span>
 <span class="fc" id="L96">      return access + &quot; or &quot; + expression;</span>
@@ -132,7 +132,7 @@ public class WebSecurityProperties {
 
 <span class="fc" id="L133">    private String password;</span>
 
-<span class="pc" id="L135">    private List&lt;String&gt; authorities = new ArrayList&lt;&gt;();</span>
+<span class="pc" id="L135">    private final List&lt;String&gt; authorities = new ArrayList&lt;&gt;();</span>
 
     /**
      * Instantiates a new simple user.
@@ -151,4 +151,4 @@ public class WebSecurityProperties {
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
