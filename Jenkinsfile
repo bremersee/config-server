@@ -5,9 +5,9 @@ pipeline {
     DOCKER_IMAGE='bremersee/config-server'
     DEV_TAG='snapshot'
     PROD_TAG='latest'
-    PUSH_SNAPSHOT_DOCKER_IMAGE = true
+    PUSH_SNAPSHOT_DOCKER_IMAGE = false
     PUSH_RELEASE_DOCKER_IMAGE = true
-    DEPLOY_SNAPSHOT_ON_SERVER = true
+    DEPLOY_SNAPSHOT_ON_SERVER = false
     DEPLOY_RELEASE_ON_SERVER = true
     DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE = true
     SNAPSHOT_SITE = true

@@ -16,9 +16,9 @@
 
 package org.bremersee.configserver;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,20 +60,24 @@ public class ApplicationTests {
    */
   @Test
   void encryptAndDecrypt() {
+    SoftAssertions softly = new SoftAssertions();
+
     String expected = "encrypt_me_i_am_a_secret";
     ResponseEntity<String> response = restTemplate
         .withBasicAuth(user, pass)
         .postForEntity("/encrypt", expected, String.class);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
+    softly.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    softly.assertThat(response.getBody()).isNotNull();
     String encrypted = response.getBody();
 
     response = restTemplate
         .withBasicAuth(user, pass)
         .postForEntity("/decrypt", encrypted, String.class);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    assertEquals(expected, response.getBody());
+    softly.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    softly.assertThat(response.getBody()).isNotNull();
+    softly.assertThat(response.getBody()).isEqualTo(expected);
+
+    softly.assertAll();
   }
 
   /**
@@ -83,7 +87,7 @@ public class ApplicationTests {
   void fetchHealth() {
     ResponseEntity<String> response = restTemplate
         .getForEntity("/actuator/health", String.class);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 
   /**
@@ -93,7 +97,7 @@ public class ApplicationTests {
   void fetchInfo() {
     ResponseEntity<String> response = restTemplate
         .getForEntity("/actuator/info", String.class);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 
   /**
@@ -104,7 +108,7 @@ public class ApplicationTests {
     ResponseEntity<String> response = restTemplate
         .withBasicAuth(actuatorUser, actuatorPass)
         .getForEntity("/actuator/metrics", String.class);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 
   /**
@@ -114,7 +118,7 @@ public class ApplicationTests {
   void fetchMetricsAndExpectUnauthorized() {
     ResponseEntity<String> response = restTemplate
         .getForEntity("/actuator/metrics", String.class);
-    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
   }
 
 }

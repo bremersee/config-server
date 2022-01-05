@@ -16,10 +16,10 @@
 
 package org.bremersee.configserver;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Optional;
+import org.assertj.core.api.SoftAssertions;
 import org.bremersee.configserver.WebSecurityProperties.SimpleUser;
 import org.junit.jupiter.api.Test;
 
@@ -35,17 +35,19 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void setApplicationAccess() {
+    SoftAssertions softly = new SoftAssertions();
+
     String value = "hasIpAddress('127.0.0.1/32')";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setApplicationAccess(value);
-    assertEquals(value, actual.getApplicationAccess());
-    assertEquals(actual, actual);
-    assertNotEquals(actual, null);
-    assertNotEquals(actual, new Object());
+    softly.assertThat(actual.getApplicationAccess()).isEqualTo(value);
+
     WebSecurityProperties expected = new WebSecurityProperties();
     expected.setApplicationAccess(value);
-    assertEquals(expected, actual);
-    assertTrue(actual.toString().contains(value));
+    softly.assertThat(actual).isEqualTo(expected);
+    softly.assertThat(actual.toString()).contains(value);
+
+    softly.assertAll();
   }
 
   /**
@@ -53,15 +55,19 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void setActuatorAccess() {
+    SoftAssertions softly = new SoftAssertions();
+
     String value = "hasRole('ACTUATOR')";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setActuatorAccess(value);
-    assertEquals(value, actual.getActuatorAccess());
-    assertEquals(actual, actual);
+    softly.assertThat(actual.getActuatorAccess()).isEqualTo(value);
+
     WebSecurityProperties expected = new WebSecurityProperties();
     expected.setActuatorAccess(value);
-    assertEquals(expected, actual);
-    assertTrue(actual.toString().contains(value));
+    softly.assertThat(actual).isEqualTo(expected);
+    softly.assertThat(actual.toString()).contains(value);
+
+    softly.assertAll();
   }
 
   /**
@@ -69,15 +75,19 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void setClientUserName() {
+    SoftAssertions softly = new SoftAssertions();
+
     String value = "qwertz";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setClientUserName(value);
-    assertEquals(value, actual.getClientUserName());
-    assertEquals(actual, actual);
+    softly.assertThat(actual.getClientUserName()).isEqualTo(value);
+
     WebSecurityProperties expected = new WebSecurityProperties();
     expected.setClientUserName(value);
-    assertEquals(expected, actual);
-    assertTrue(actual.toString().contains(value));
+    softly.assertThat(actual).isEqualTo(expected);
+    softly.assertThat(actual.toString()).contains(value);
+
+    softly.assertAll();
   }
 
   /**
@@ -85,15 +95,19 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void setClientUserPassword() {
+    SoftAssertions softly = new SoftAssertions();
+
     String value = "qwertz";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setClientUserPassword(value);
-    assertEquals(value, actual.getClientUserPassword());
-    assertEquals(actual, actual);
+    softly.assertThat(actual.getClientUserPassword()).isEqualTo(value);
+
     WebSecurityProperties expected = new WebSecurityProperties();
     expected.setClientUserPassword(value);
-    assertEquals(expected, actual);
-    assertFalse(actual.toString().contains(value));
+    softly.assertThat(actual).isEqualTo(expected);
+    softly.assertThat(actual.toString()).doesNotContain(value);
+
+    softly.assertAll();
   }
 
   /**
@@ -101,15 +115,19 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void setActuatorUserName() {
+    SoftAssertions softly = new SoftAssertions();
+
     String value = "qwertz";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setActuatorUserName(value);
-    assertEquals(value, actual.getActuatorUserName());
-    assertEquals(actual, actual);
+    softly.assertThat(actual.getActuatorUserName()).isEqualTo(value);
+
     WebSecurityProperties expected = new WebSecurityProperties();
     expected.setActuatorUserName(value);
-    assertEquals(expected, actual);
-    assertTrue(actual.toString().contains(value));
+    softly.assertThat(actual).isEqualTo(expected);
+    softly.assertThat(actual.toString()).contains(value);
+
+    softly.assertAll();
   }
 
   /**
@@ -117,15 +135,19 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void setActuatorUserPassword() {
+    SoftAssertions softly = new SoftAssertions();
+
     String value = "qwertz";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setActuatorUserPassword(value);
-    assertEquals(value, actual.getActuatorUserPassword());
-    assertEquals(actual, actual);
+    softly.assertThat(actual.getActuatorUserPassword()).isEqualTo(value);
+
     WebSecurityProperties expected = new WebSecurityProperties();
     expected.setActuatorUserPassword(value);
-    assertEquals(expected, actual);
-    assertFalse(actual.toString().contains(value));
+    softly.assertThat(actual).isEqualTo(expected);
+    softly.assertThat(actual.toString()).doesNotContain(value);
+
+    softly.assertAll();
   }
 
   /**
@@ -133,15 +155,19 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void setAdminUserName() {
+    SoftAssertions softly = new SoftAssertions();
+
     String value = "qwertz";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setAdminUserName(value);
-    assertEquals(value, actual.getAdminUserName());
-    assertEquals(actual, actual);
+    softly.assertThat(actual.getAdminUserName()).isEqualTo(value);
+
     WebSecurityProperties expected = new WebSecurityProperties();
     expected.setAdminUserName(value);
-    assertEquals(expected, actual);
-    assertTrue(actual.toString().contains(value));
+    softly.assertThat(actual).isEqualTo(expected);
+    softly.assertThat(actual.toString()).contains(value);
+
+    softly.assertAll();
   }
 
   /**
@@ -149,15 +175,19 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void setAdminUserPassword() {
+    SoftAssertions softly = new SoftAssertions();
+
     String value = "qwertz";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setAdminUserPassword(value);
-    assertEquals(value, actual.getAdminUserPassword());
-    assertEquals(actual, actual);
+    softly.assertThat(actual.getAdminUserPassword()).isEqualTo(value);
+
     WebSecurityProperties expected = new WebSecurityProperties();
     expected.setAdminUserPassword(value);
-    assertEquals(expected, actual);
-    assertFalse(actual.toString().contains(value));
+    softly.assertThat(actual).isEqualTo(expected);
+    softly.assertThat(actual.toString()).doesNotContain(value);
+
+    softly.assertAll();
   }
 
   /**
@@ -168,9 +198,8 @@ class WebSecurityPropertiesTest {
     String value = "hasIpAddress('127.0.0.1/32')";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setApplicationAccess(value);
-    assertEquals(
-        "hasIpAddress('127.0.0.1/32') or hasAuthority('ROLE_CONFIG_CLIENT')",
-        actual.buildApplicationAccess());
+    assertThat(actual.buildApplicationAccess())
+        .isEqualTo("hasIpAddress('127.0.0.1/32') or hasAuthority('ROLE_CONFIG_CLIENT')");
   }
 
   /**
@@ -181,9 +210,8 @@ class WebSecurityPropertiesTest {
     String value = "hasIpAddress('127.0.0.1/32')";
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setActuatorAccess(value);
-    assertEquals(
-        "hasIpAddress('127.0.0.1/32') or hasAuthority('ROLE_ACTUATOR')",
-        actual.buildActuatorAccess());
+    assertThat(actual.buildActuatorAccess())
+        .isEqualTo("hasIpAddress('127.0.0.1/32') or hasAuthority('ROLE_ACTUATOR')");
   }
 
   /**
@@ -191,59 +219,40 @@ class WebSecurityPropertiesTest {
    */
   @Test
   void buildUsers() {
+    SoftAssertions softly = new SoftAssertions();
+
+    SimpleUser clientUser = new SimpleUser("qwertz", "pass1", "ROLE_CONFIG_CLIENT");
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setClientUserName("qwertz");
     actual.setClientUserPassword("pass1");
     List<SimpleUser> users = actual.buildUsers();
-    assertNotNull(users);
-    assertEquals(1, users.size());
-    SimpleUser user = users.get(0);
-    assertEquals(user, user);
-    assertNotEquals(user, null);
-    assertNotEquals(user, new Object());
-    assertTrue(user.toString().contains("qwertz"));
-    assertFalse(user.toString().contains("pass1"));
-    assertEquals("qwertz", user.getName());
-    assertEquals("pass1", user.getPassword());
-    List<String> authorities = user.getAuthorities();
-    assertNotNull(authorities);
-    assertEquals(1, authorities.size());
-    assertEquals("ROLE_CONFIG_CLIENT", authorities.get(0));
+    softly.assertThat(users).isNotNull();
+    softly.assertThat(users)
+        .containsExactly(clientUser);
 
+    SimpleUser user = users.get(0);
+    softly.assertThat(user).isNotNull();
+    softly.assertThat(user.getName()).isEqualTo("qwertz");
+    softly.assertThat(user.getPassword()).isEqualTo("pass1");
+    softly.assertThat(user.toString()).contains("qwertz");
+    softly.assertThat(user.toString()).doesNotContain("pass1");
+
+    List<String> authorities = user.getAuthorities();
+    softly.assertThat(authorities).containsExactly("ROLE_CONFIG_CLIENT");
+
+    SimpleUser actuatorUser = new SimpleUser("actuator", "pass2", "ROLE_ACTUATOR");
     actual.setActuatorUserName("actuator");
     actual.setActuatorUserPassword("pass2");
     users = actual.buildUsers();
-    assertNotNull(users);
-    assertEquals(2, users.size());
-    Optional<SimpleUser> optUser = users.stream()
-        .filter(u -> "actuator".equals(u.getName()))
-        .findAny();
-    assertTrue(optUser.isPresent());
-    user = optUser.get();
-    assertEquals("actuator", user.getName());
-    assertEquals("pass2", user.getPassword());
-    authorities = user.getAuthorities();
-    assertNotNull(authorities);
-    assertEquals(1, authorities.size());
-    assertEquals("ROLE_ACTUATOR", authorities.get(0));
+    softly.assertThat(users).containsExactlyInAnyOrder(clientUser, actuatorUser);
 
+    SimpleUser adminUser = new SimpleUser("admin", "pass3", "ROLE_CONFIG_CLIENT", "ROLE_ACTUATOR");
     actual.setAdminUserName("admin");
     actual.setAdminUserPassword("pass3");
     users = actual.buildUsers();
-    assertNotNull(users);
-    assertEquals(3, users.size());
-    optUser = users.stream()
-        .filter(u -> "admin".equals(u.getName()))
-        .findAny();
-    assertTrue(optUser.isPresent());
-    user = optUser.get();
-    assertEquals("admin", user.getName());
-    assertEquals("pass3", user.getPassword());
-    authorities = user.getAuthorities();
-    assertNotNull(authorities);
-    assertEquals(2, authorities.size());
-    assertTrue(authorities.contains("ROLE_ACTUATOR"));
-    assertTrue(authorities.contains("ROLE_CONFIG_CLIENT"));
+    softly.assertThat(users).containsExactlyInAnyOrder(clientUser, actuatorUser, adminUser);
+
+    softly.assertAll();
   }
 
 }
