@@ -35,7 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 /**
- * Extended spring boot web security configuration:
+ * Extended spring boot web security configuration.
  * <ul>
  * <li>Disables CSRF
  * <li>Enables Basic Authentication for users configured with {@link WebSecurityConfiguration}
@@ -85,8 +85,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   /**
-   * Creates an in-memory user details service based on the users configured in
-   * {@link WebSecurityConfiguration}.
+   * Creates an in-memory user details service based on the users configured in {@link WebSecurityConfiguration}.
    *
    * @return the user details service for the basic authentication
    */
@@ -97,13 +96,13 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     log.info("Building user details service with {}", properties);
     final PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     final UserDetails[] userDetails = properties.buildUsers().stream().map(
-        simpleUser -> User.builder()
-            .username(simpleUser.getName())
-            .password(simpleUser.getPassword())
-            .authorities(
-                simpleUser.getAuthorities().toArray(new String[0]))
-            .passwordEncoder(encoder::encode)
-            .build())
+            simpleUser -> User.builder()
+                .username(simpleUser.getName())
+                .password(simpleUser.getPassword())
+                .authorities(
+                    simpleUser.getAuthorities().toArray(new String[0]))
+                .passwordEncoder(encoder::encode)
+                .build())
         .toArray(UserDetails[]::new);
     return new InMemoryUserDetailsManager(userDetails);
   }

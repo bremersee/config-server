@@ -223,8 +223,8 @@ class WebSecurityPropertiesTest {
 
     SimpleUser clientUser = new SimpleUser("qwertz", "pass1", "ROLE_CONFIG_CLIENT");
     WebSecurityProperties actual = new WebSecurityProperties();
-    actual.setClientUserName("qwertz");
-    actual.setClientUserPassword("pass1");
+    actual.setClientUserName(clientUser.getName());
+    actual.setClientUserPassword(clientUser.getPassword());
     List<SimpleUser> users = actual.buildUsers();
     softly.assertThat(users).isNotNull();
     softly.assertThat(users)
@@ -232,23 +232,23 @@ class WebSecurityPropertiesTest {
 
     SimpleUser user = users.get(0);
     softly.assertThat(user).isNotNull();
-    softly.assertThat(user.getName()).isEqualTo("qwertz");
-    softly.assertThat(user.getPassword()).isEqualTo("pass1");
-    softly.assertThat(user.toString()).contains("qwertz");
-    softly.assertThat(user.toString()).doesNotContain("pass1");
+    softly.assertThat(user.getName()).isEqualTo(clientUser.getName());
+    softly.assertThat(user.getPassword()).isEqualTo(clientUser.getPassword());
+    softly.assertThat(user.toString()).contains(clientUser.getName());
+    softly.assertThat(user.toString()).doesNotContain(clientUser.getPassword());
 
     List<String> authorities = user.getAuthorities();
     softly.assertThat(authorities).containsExactly("ROLE_CONFIG_CLIENT");
 
     SimpleUser actuatorUser = new SimpleUser("actuator", "pass2", "ROLE_ACTUATOR");
-    actual.setActuatorUserName("actuator");
-    actual.setActuatorUserPassword("pass2");
+    actual.setActuatorUserName(actuatorUser.getName());
+    actual.setActuatorUserPassword(actuatorUser.getPassword());
     users = actual.buildUsers();
     softly.assertThat(users).containsExactlyInAnyOrder(clientUser, actuatorUser);
 
     SimpleUser adminUser = new SimpleUser("admin", "pass3", "ROLE_CONFIG_CLIENT", "ROLE_ACTUATOR");
-    actual.setAdminUserName("admin");
-    actual.setAdminUserPassword("pass3");
+    actual.setAdminUserName(adminUser.getName());
+    actual.setAdminUserPassword(adminUser.getPassword());
     users = actual.buildUsers();
     softly.assertThat(users).containsExactlyInAnyOrder(clientUser, actuatorUser, adminUser);
 
