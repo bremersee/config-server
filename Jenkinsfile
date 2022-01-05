@@ -10,7 +10,7 @@ pipeline {
     DEPLOY_SNAPSHOT_ON_SERVER = false
     DEPLOY_RELEASE_ON_SERVER = true
     DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE = true
-    SNAPSHOT_SITE = false
+    SNAPSHOT_SITE = true
     RELEASE_SITE = true
   }
   options {
