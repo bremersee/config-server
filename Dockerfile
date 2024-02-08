@@ -13,7 +13,7 @@ RUN mkdir /data/etc
 ADD src/main/resources/application.yml /data/etc/application.yml
 
 RUN mkdir /app
-ADD target/app.jar /app/app.jar
+ADD target/config-server.jar /app/app.jar
 
 WORKDIR /app
 

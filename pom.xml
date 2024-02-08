@@ -156,17 +156,7 @@
 
   <profiles>
     <profile>
-      <id>docker</id>
-      <build>
-        <finalName>app</finalName>
-      </build>
-    </profile>
-
-    <profile>
       <id>debian11</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <assembly-config>debian11.xml</assembly-config>
       </properties>

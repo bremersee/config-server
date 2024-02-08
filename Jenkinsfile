@@ -1,8 +1,14 @@
 pipeline {
   agent none
   environment {
+    TEST = true
+    DEPLOY_SNAPSHOT_ON_DATA = true
+    DEPLOY_RELEASE_ON_DATA = true
+
     SERVICE_NAME='config-server'
     DOCKER_IMAGE='bremersee/config-server'
+    DATA_TAG='latest'
+
     DEV_TAG='snapshot'
     PROD_TAG='latest'
     PUSH_SNAPSHOT_DOCKER_IMAGE = false
@@ -17,22 +23,31 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '8', artifactNumToKeepStr: '8'))
   }
   stages {
+    stage('Tools') {
+      agent {
+        label 'maven'
+      }
+      tools {
+        jdk 'jdk17'
+        maven 'm3'
+      }
+      steps {
+        sh 'java -version'
+        sh 'mvn -B --version'
+      }
+    }
     stage('Test') {
       agent {
         label 'maven'
       }
       tools {
-        jdk 'jdk11'
+        jdk 'jdk17'
         maven 'm3'
       }
       when {
-        not {
-          branch 'feature/*'
-        }
+        environment name: 'TEST', value: 'true'
       }
       steps {
-        sh 'java -version'
-        sh 'mvn -B --version'
         sh 'mvn -B clean test'
       }
       post {
@@ -44,179 +59,50 @@ pipeline {
         }
       }
     }
-    stage('Push snapshot docker image') {
+    stage('Build') {
+      agent {
+        label 'maven'
+      }
+      tools {
+        jdk 'jdk17'
+        maven 'm3'
+      }
+      when {
+        anyOf {
+          environment name: 'DEPLOY_SNAPSHOT_ON_DATA', value: 'true'
+          environment name: 'DEPLOY_RELEASE_ON_DATA', value: 'true'
+        }
+      }
+      steps {
+        sh 'mvn -B -Dmaven.test.skip=true clean package'
+      }
+    }
+    stage('Deploy Snapshot On Data') {
       agent {
         label 'maven'
       }
       when {
         allOf {
-          branch 'develop'
-          environment name: 'PUSH_SNAPSHOT_DOCKER_IMAGE', value: 'true'
+          environment name: 'DEPLOY_SNAPSHOT_ON_DATA', value: 'true'
+          anyOf {
+            branch 'develop'
+            branch 'feature/*'
+          }
         }
       }
-      tools {
-        jdk 'jdk11'
-        maven 'm3'
-      }
-      steps {
-        sh '''
-          mvn -B -DskipTests -Ddockerfile.skip=false clean package dockerfile:push
-          mvn -B -DskipTests -Ddockerfile.skip=false -Ddockerfile.tag=snapshot clean package dockerfile:push
-          docker system prune -a -f
-        '''
-      }
-    }
-    stage('Push release docker image') {
-      agent {
-        label 'maven'
-      }
-      when {
-        allOf {
-          branch 'master'
-          environment name: 'PUSH_RELEASE_DOCKER_IMAGE', value: 'true'
-        }
-      }
-      tools {
-        jdk 'jdk11'
-        maven 'm3'
-      }
-      steps {
-        sh '''
-          mvn -B -DskipTests -Ddockerfile.skip=false clean package dockerfile:push
-          mvn -B -DskipTests -Ddockerfile.skip=false -Ddockerfile.tag=latest clean package dockerfile:push
-          docker system prune -a -f
-        '''
-      }
-    }
-    stage('Deploy snapshot on config-server') {
-      agent {
-        label 'maven'
-      }
-      when {
-        allOf {
-          branch 'develop'
-          environment name: 'DEPLOY_SNAPSHOT_ON_SERVER', value: 'true'
-        }
-      }
-      tools {
-        jdk 'jdk11'
-        maven 'm3'
-      }
-      steps {
-        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server clean deploy'
-      }
-    }
-    stage('Deploy release on config-server') {
-      agent {
-        label 'maven'
-      }
-      when {
-        allOf {
-          branch 'master'
-          environment name: 'DEPLOY_RELEASE_ON_SERVER', value: 'true'
-        }
-      }
-      tools {
-        jdk 'jdk11'
-        maven 'm3'
-      }
-      steps {
-        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server clean deploy'
-      }
-    }
-    stage('Deploy release on apt repository debian-bullseye') {
-      agent {
-        label 'maven'
-      }
-      when {
-        allOf {
-          branch 'master'
-          environment name: 'DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE', value: 'true'
-        }
-      }
-      tools {
-        jdk 'jdk11'
-        maven 'm3'
-      }
-      steps {
-        sh 'mvn -B -DskipTests=true -Dhttp.protocol.expect-continue=true -Pdebian11,deploy-to-repo-debian-bullseye clean deploy'
-      }
-    }
-    stage('Deploy snapshot site') {
-      agent {
-        label 'maven'
-      }
-      environment {
-        CODECOV_TOKEN = credentials('config-server-codecov-token')
-      }
-      when {
-        allOf {
-          branch 'develop'
-          environment name: 'SNAPSHOT_SITE', value: 'true'
-        }
-      }
-      tools {
-        jdk 'jdk11'
-        maven 'm3'
-      }
-      steps {
-        sh 'mvn -B clean site-deploy'
-      }
-      post {
-        always {
-          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
-        }
-      }
-    }
-    stage('Deploy release site') {
-      agent {
-        label 'maven'
-      }
-      environment {
-        CODECOV_TOKEN = credentials('config-server-codecov-token')
-      }
-      when {
-        allOf {
-          branch 'master'
-          environment name: 'RELEASE_SITE', value: 'true'
-        }
-      }
-      tools {
-        jdk 'jdk11'
-        maven 'm3'
-      }
-      steps {
-        sh 'mvn -B -P gh-pages-site clean site site:stage scm-publish:publish-scm'
-      }
-      post {
-        always {
-          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
-        }
-      }
-    }
-    stage('Test feature') {
-      agent {
-        label 'maven'
-      }
-      when {
-        branch 'feature/*'
-      }
-      tools {
-        jdk 'jdk11'
-        maven 'm3'
-      }
-      steps {
-        sh 'java -version'
-        sh 'mvn -B --version'
-        sh 'mvn -B -P feature,allow-features clean test'
-      }
-      post {
-        always {
-          junit '**/surefire-reports/*.xml'
-          jacoco(
-              execPattern: '**/coverage-reports/*.exec'
-          )
-        }
+      withCredentials([
+        string(credentialsId: 'data-docker-host', variable: 'docker-host'),
+        file(credentialsId: 'data-docker-ca', variable: 'docker-ca'),
+        file(credentialsId: 'data-docker-cert', variable: 'docker-cert'),
+        file(credentialsId: 'data-docker-key', variable: 'docker-key'),
+        file(credentialsId: 'config-server-keystore', variable: 'ks'),
+        string(credentialsId: 'config-server-keystore-password', variable: 'ks-password'),
+        usernamePassword(credentialsId: 'config-server-keystore-entry', usernameVariable: 'alias', passwordVariable: 'secret'),
+        usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'client', passwordVariable: 'client-password'),
+        usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'actuator', passwordVariable: 'actuator-password'),
+        usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'admin', passwordVariable: 'admin-password')
+      ]) {
+        sh 'docker -H $docker-host --tlsverify --tlscert=$docker-cert --tlskey=$docker-key --tlscacert=$docker-ca -t bremersee/config-server-ks:snapshot -f DockerfileWithKeystore --build-arg platform=arm64 --build-arg keystore=$ks --build-arg keystoreType=jks --build-arg keystoreAlias=$alias --build-arg keystoreSecret=$secret --build-arg clientUser=$client --build-arg clientPassword=$client-password --build-arg actuatorUser=$actuator --build-arg actuatorPassword=$actuator-password --build-arg adminUser=$admin --build-arg adminPassword=$admin-password .'
       }
     }
   }
