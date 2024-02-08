@@ -227,4 +227,4 @@ The answer will be:
 
 - [Release](https://bremersee.github.io/config-server/index.html)
 
-- [Snapshot](https://nexus.bremersee.org/repository/maven-sites/config-server/1.4.2-SNAPSHOT/index.html)
+- [Snapshot](https://nexus.bremersee.org/repository/maven-sites/config-server/2.0.0-SNAPSHOT/index.html)
