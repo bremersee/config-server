@@ -1,5 +1,7 @@
 pipeline {
-  agent none
+  agent {
+    label 'docker && maven'
+  }
   environment {
     TEST = true
     DEPLOY_SNAPSHOT_ON_DATA = true
@@ -19,6 +21,10 @@ pipeline {
     SNAPSHOT_SITE = false
     RELEASE_SITE = true
   }
+  tools {
+    jdk 'jdk17'
+    maven 'm3'
+  }
   options {
     buildDiscarder(logRotator(numToKeepStr: '8', artifactNumToKeepStr: '8'))
   }
@@ -37,13 +43,6 @@ pipeline {
       }
     }
     stage('Test') {
-      agent {
-        label 'maven'
-      }
-      tools {
-        jdk 'jdk17'
-        maven 'm3'
-      }
       when {
         environment name: 'TEST', value: 'true'
       }
@@ -60,13 +59,6 @@ pipeline {
       }
     }
     stage('Build') {
-      agent {
-        label 'maven'
-      }
-      tools {
-        jdk 'jdk17'
-        maven 'm3'
-      }
       when {
         anyOf {
           environment name: 'DEPLOY_SNAPSHOT_ON_DATA', value: 'true'
@@ -78,9 +70,6 @@ pipeline {
       }
     }
     stage('Deploy Snapshot On Data') {
-      agent {
-        label 'maven'
-      }
       when {
         allOf {
           environment name: 'DEPLOY_SNAPSHOT_ON_DATA', value: 'true'
