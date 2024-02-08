@@ -18,7 +18,7 @@ EXPOSE 8080
 VOLUME /data
 
 ENV DATA_DIR=/data
-ENV ENCRYPTION_KEYSTORE_LOCATION=file:/data/etc/keystore.$keystoreType
+ENV ENCRYPTION_KEYSTORE_LOCATION=file://data/etc/keystore.$keystoreType
 ENV ENCRYPTION_KEYSTORE_TYPE=$keystoreType
 ENV ENCRYPTION_KEYSTORE_PASSWORD=$keystorePassword
 ENV ENCRYPTION_KEYSTORE_ALIAS=$keystoreAlias
