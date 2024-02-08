@@ -92,6 +92,8 @@ pipeline {
           usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'ACTUATOR', passwordVariable: 'ACTUATOR_PASSWORD'),
           usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
         ]) {
+          sh 'echo "docker -H $DOCKER_HOST --tlsverify --tlscert=$DOCKER_CERT --tlskey=$DOCKER_KEY --tlscacert=$DOCKER_CA build -t bremersee/config-server-ks:snapshot -f DockerfileConfigured --build-arg platform=arm64 --build-arg keystore=$KS --build-arg keystoreType=jks --build-arg keystorePassword=$KS_PASSWORD --build-arg keystoreAlias=$ALIAS --build-arg keystoreSecret=$SECRET --build-arg clientUser=$CLIENT --build-arg clientPassword=$CLIENT_PASSWORD --build-arg actuatorUser=$ACTUATOR --build-arg actuatorPassword=$ACTUATOR_PASSWORD --build-arg adminUser=$ADMIN --build-arg adminPassword=$ADMIN_PASSWORD" > docker.txt'
+          sh 'echo $(cat docker.txt)'
           sh 'docker -H $DOCKER_HOST --tlsverify --tlscert=$DOCKER_CERT --tlskey=$DOCKER_KEY --tlscacert=$DOCKER_CA build -t bremersee/config-server-ks:snapshot -f DockerfileConfigured --build-arg platform=arm64 --build-arg keystore=$KS --build-arg keystoreType=jks --build-arg keystorePassword=$KS_PASSWORD --build-arg keystoreAlias=$ALIAS --build-arg keystoreSecret=$SECRET --build-arg clientUser=$CLIENT --build-arg clientPassword=$CLIENT_PASSWORD --build-arg actuatorUser=$ACTUATOR --build-arg actuatorPassword=$ACTUATOR_PASSWORD --build-arg adminUser=$ADMIN --build-arg adminPassword=$ADMIN_PASSWORD .'
         }
       }
