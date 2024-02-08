@@ -82,20 +82,20 @@ pipeline {
       steps {
         withCredentials([
           string(credentialsId: 'data-docker-host', variable: 'DOCKER_HOST'),
-          file(credentialsId: 'data-docker-ca', variable: 'docker-ca'),
-          file(credentialsId: 'data-docker-cert', variable: 'docker-cert'),
-          file(credentialsId: 'data-docker-key', variable: 'docker-key'),
+          file(credentialsId: 'data-docker-ca', variable: 'DOCKER_CA'),
+          file(credentialsId: 'data-docker-cert', variable: 'DOCKER_CERT'),
+          file(credentialsId: 'data-docker-key', variable: 'DOCKER_KEY'),
           file(credentialsId: 'config-server-keystore', variable: 'KS'),
-          string(credentialsId: 'config-server-keystore-password', variable: 'ks-password'),
+          string(credentialsId: 'config-server-keystore-password', variable: 'KS_PASSWORD'),
           usernamePassword(credentialsId: 'config-server-keystore-entry', usernameVariable: 'ALIAS', passwordVariable: 'SECRET'),
-          usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'client', passwordVariable: 'client-password'),
-          usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'actuator', passwordVariable: 'actuator-password'),
-          usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'admin', passwordVariable: 'admin-password')
+          usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'CLIENT', passwordVariable: 'CLIENT_PASSWORD'),
+          usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'ACTUATOR', passwordVariable: 'ACTUATOR_PASSWORD'),
+          usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
         ]) {
           sh 'echo $DOCKER_HOST'
           sh 'echo $KS'
           sh 'echo $ALIAS $SECRET'
-          sh 'docker -H \$DOCKER_HOST --tlsverify --tlscert=\$docker-cert --tlskey=\$docker-key --tlscacert=\$docker-ca -t bremersee/config-server-ks:snapshot -f DockerfileWithKeystore --build-arg platform=arm64 --build-arg keystore=\$ks --build-arg keystoreType=jks --build-arg keystoreAlias=\$alias --build-arg keystoreSecret=\$secret --build-arg clientUser=\$client --build-arg clientPassword=\$client-password --build-arg actuatorUser=\$actuator --build-arg actuatorPassword=\$actuator-password --build-arg adminUser=\$admin --build-arg adminPassword=\$admin-password .'
+          sh 'docker -H $DOCKER_HOST --tlsverify --tlscert=$DOCKER_CERT --tlskey=$DOCKER_KEY --tlscacert=$DOCKER_CA -t bremersee/config-server-ks:snapshot -f DockerfileWithKeystore --build-arg platform=arm64 --build-arg keystore=$KS --build-arg keystoreType=jks --build-arg keystorePassword=$KS_PASSWORD --build-arg keystoreAlias=$ALIAS --build-arg keystoreSecret=$SECRET --build-arg clientUser=$CLIENT --build-arg clientPassword=$CLIENT_PASSWORD --build-arg actuatorUser=$ACTUATOR --build-arg actuatorPassword=$ACTUATOR_PASSWORD --build-arg adminUser=$ADMIN --build-arg adminPassword=$ADMIN_PASSWORD .'
         }
       }
     }
