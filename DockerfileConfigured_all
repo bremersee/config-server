@@ -17,6 +17,7 @@ ARG adminPassword
 EXPOSE 8080
 
 ENV DATA_DIR=/data
+ENV ENCRYPTION_KEYSTORE_LOCATION=/data/etc/keystore.$keystoreType
 ENV ENCRYPTION_KEYSTORE_TYPE=$keystoreType
 ENV ENCRYPTION_KEYSTORE_PASSWORD=$keystorePassword
 ENV ENCRYPTION_KEYSTORE_ALIAS=$keystoreAlias
@@ -33,6 +34,7 @@ RUN mkdir /data
 RUN mkdir /data/etc
 
 ADD src/main/resources/application.yml /data/etc/application.yml
+ADD $keystore /data/etc/keystore.$keystoreType
 
 RUN mkdir /app
 ADD target/config-server.jar /app/app.jar
