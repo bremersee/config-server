@@ -4,6 +4,7 @@ FROM --platform=linux/$platform eclipse-temurin:21-jre-jammy
 MAINTAINER Christian Bremer <bremersee@googlemail.com>
 
 EXPOSE 8080
+VOLUME /data
 
 ENV DATA_DIR=/data
 
