@@ -95,7 +95,8 @@ pipeline {
           sh 'echo $DOCKER_HOST > docker_host.txt'
           sh 'echo $KS > ks.txt'
           sh 'echo "$ALIAS $SECRET" > alias.txt'
-          sh 'docker -H $DOCKER_HOST --tlsverify --tlscert=$DOCKER_CERT --tlskey=$DOCKER_KEY --tlscacert=$DOCKER_CA -t bremersee/config-server-ks:latest -f DockerfileWithKeystore --build-arg platform=arm64 --build-arg keystore=$KS --build-arg keystoreType=jks --build-arg keystorePassword=$KS_PASSWORD --build-arg keystoreAlias=$ALIAS --build-arg keystoreSecret=$SECRET --build-arg clientUser=$CLIENT --build-arg clientPassword=$CLIENT_PASSWORD --build-arg actuatorUser=$ACTUATOR --build-arg actuatorPassword=$ACTUATOR_PASSWORD --build-arg adminUser=$ADMIN --build-arg adminPassword=$ADMIN_PASSWORD .'
+          sh 'echo "docker -H $DOCKER_HOST --tlsverify --tlscert=$DOCKER_CERT --tlskey=$DOCKER_KEY --tlscacert=$DOCKER_CA -t bremersee/config-server-ks:snapshot --build-arg platform=arm64 --build-arg keystore=$KS --build-arg keystoreType=jks --build-arg keystorePassword=$KS_PASSWORD --build-arg keystoreAlias=$ALIAS --build-arg keystoreSecret=$SECRET --build-arg clientUser=$CLIENT --build-arg clientPassword=$CLIENT_PASSWORD --build-arg actuatorUser=$ACTUATOR --build-arg actuatorPassword=$ACTUATOR_PASSWORD --build-arg adminUser=$ADMIN --build-arg adminPassword=$ADMIN_PASSWORD" > docker.txt'
+          sh 'docker -H $DOCKER_HOST --tlsverify --tlscert=$DOCKER_CERT --tlskey=$DOCKER_KEY --tlscacert=$DOCKER_CA -t bremersee/config-server-ks:snapshot --build-arg platform=arm64 --build-arg keystore=$KS --build-arg keystoreType=jks --build-arg keystorePassword=$KS_PASSWORD --build-arg keystoreAlias=$ALIAS --build-arg keystoreSecret=$SECRET --build-arg clientUser=$CLIENT --build-arg clientPassword=$CLIENT_PASSWORD --build-arg actuatorUser=$ACTUATOR --build-arg actuatorPassword=$ACTUATOR_PASSWORD --build-arg adminUser=$ADMIN --build-arg adminPassword=$ADMIN_PASSWORD .'
         }
       }
     }
