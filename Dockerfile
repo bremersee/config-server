@@ -1,6 +1,4 @@
-ARG platform
-
-FROM --platform=linux/$platform eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 MAINTAINER Christian Bremer <bremersee@googlemail.com>
 
 EXPOSE 8080
