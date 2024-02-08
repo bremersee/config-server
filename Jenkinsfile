@@ -93,7 +93,6 @@ pipeline {
           usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'admin', passwordVariable: 'admin-password')
         ]) {
           sh 'echo $docker-host > docker-host.txt'
-          sh 'cp $docker-ca ca.pem'
           sh 'cp \$docker-cert cacert.pem'
           sh 'echo docker-key=\$docker-key'
           sh 'echo keystore=\$ks'
