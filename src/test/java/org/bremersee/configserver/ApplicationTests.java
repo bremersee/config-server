@@ -159,6 +159,9 @@ public class ApplicationTests {
         .isEqualTo(HttpStatus.UNAUTHORIZED);
   }
 
+  /**
+   * Fetch test config.
+   */
   @Test
   void fetchTestConfig() {
     ResponseEntity<String> response = restTemplate
