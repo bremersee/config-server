@@ -131,6 +131,7 @@ pipeline {
                 --tlskey=$DOCKER_KEY \
                 --tlscacert=$DOCKER_CA \
                 images | awk '/\$IMAGE/ && /\$TAG/')
+                echo "New image \$NEW_IMAGE"
               while [ -z "\$NEW_IMAGE" ] && [ \$NUMBER -lt 12 ]; do
                 echo "\$NUMBER: No new config-server image found. Waiting 10 seconds and trying again."
                 ((NUMBER=NUMBER+1))
@@ -143,6 +144,7 @@ pipeline {
                   --tlskey=$DOCKER_KEY \
                   --tlscacert=$DOCKER_CA \
                   images | awk '/\$IMAGE/ && /\$TAG/')
+                echo "New image \$NEW_IMAGE"
               done
               if [ -z "\$NEW_IMAGE" ]; then
                 echo "New config-server image was found. Giving up."
