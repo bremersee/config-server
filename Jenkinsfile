@@ -4,7 +4,6 @@ pipeline {
   }
   environment {
     CODECOV_TOKEN = credentials('config-server-codecov-token')
-    TEST = true
     DEPLOY_SNAPSHOT_ON_DATA = true
     DEPLOY_RELEASE_ON_DATA = true
 
@@ -43,12 +42,9 @@ pipeline {
         sh 'mvn -B --version'
       }
     }
-    stage('Test') {
-      when {
-        environment name: 'TEST', value: 'true'
-      }
+    stage('Build') {
       steps {
-        sh 'mvn -B clean test'
+        sh 'mvn -B clean package'
       }
       post {
         always {
@@ -58,17 +54,6 @@ pipeline {
           )
           sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
         }
-      }
-    }
-    stage('Build') {
-      when {
-        anyOf {
-          environment name: 'DEPLOY_SNAPSHOT_ON_DATA', value: 'true'
-          environment name: 'DEPLOY_RELEASE_ON_DATA', value: 'true'
-        }
-      }
-      steps {
-        sh 'mvn -B -Dmaven.test.skip=true clean package'
       }
     }
     stage('Deploy Snapshot On Data') {
@@ -120,21 +105,21 @@ pipeline {
               --build-arg adminPassword=$ADMIN_PASSWORD \
               .
               rm target/keystore.jks
-              NEW_IMAGE=docker \
+              NEW_IMAGE=\$(docker \
                 -H $DOCKER_HOST \
                 --tlsverify \
                 --tlscert=$DOCKER_CERT \
                 --tlskey=$DOCKER_KEY \
                 --tlscacert=$DOCKER_CA \
-                images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/'
+                images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
               echo "New image \$NEW_IMAGE"
-              CONTAINER_ID=docker \
+              CONTAINER_ID=\$(docker \
                 -H $DOCKER_HOST \
                 --tlsverify \
                 --tlscert=$DOCKER_CERT \
                 --tlskey=$DOCKER_KEY \
                 --tlscacert=$DOCKER_CA \
-                ps -aqf "name=^config-server"
+                ps -aqf "name=^config-server")
                 echo "Container id is \$CONTAINER_ID"
           '''
         }
