@@ -127,7 +127,7 @@ pipeline {
                 --tlskey=$DOCKER_KEY \
                 --tlscacert=$DOCKER_CA \
                 images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
-              while [ -z "\$NEW_IMAGE" ] -a [ \$NUMBER -gt 3 ]; do
+              while [ -z "\$NEW_IMAGE" ] -a [ \$NUMBER -lt 3 ]; do
                 echo "\$NUMBER: No new config-server image found. Waiting 10 seconds and trying again."
                 ((NUMBER=\$NUMBER+1))
                 sleep 10
@@ -139,6 +139,11 @@ pipeline {
                   --tlscacert=$DOCKER_CA \
                   images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
               done
+              if [ -z "\$NEW_IMAGE" ]; then
+                echo "New config-server image was found. Giving up."
+                exit 1
+              fi
+              echo "New config-server image is present: \$NEW_IMAGE"
           '''
         }
       }
