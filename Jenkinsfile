@@ -128,7 +128,7 @@ pipeline {
                 --tlscacert=$DOCKER_CA \
                 images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
               while [ -z "\$NEW_IMAGE" ] -a [ \$NUMBER -lt 12 ]; do
-                echo "\$NUMBER: No new config-server image found. Waiting 10 seconds and trying again."
+                echo "\$NUMBER No new config-server image found. Waiting 10 seconds and trying again."
                 ((NUMBER=\$NUMBER+1))
                 sleep 10
                 NEW_IMAGE=\$(docker \
