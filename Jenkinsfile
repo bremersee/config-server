@@ -82,6 +82,10 @@ pipeline {
           sh '''
             #!/bin/bash
             cp $KS target/keystore.jks
+            IMAGE=config-server-configured-arm64
+            echo "Image \$IMAGE"
+            TAG=snapshot-${BUILD_NUMBER}
+            echo "Tag \$TAG"
             docker \
               -H $DOCKER_HOST \
               --tlsverify \
@@ -89,7 +93,7 @@ pipeline {
               --tlskey=$DOCKER_KEY \
               --tlscacert=$DOCKER_CA \
               build \
-              -t bremersee/config-server-configured-arm64:snapshot-${BUILD_NUMBER} \
+              -t bremersee/\$IMAGE:\$TAG \
               -f DockerfileConfiguredArm64 \
               --build-arg platform=arm64 \
               --build-arg keystore=target/keystore.jks \
@@ -126,10 +130,11 @@ pipeline {
                 --tlscert=$DOCKER_CERT \
                 --tlskey=$DOCKER_KEY \
                 --tlscacert=$DOCKER_CA \
-                images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
+                images | awk '/\$IMAGE/ && /\$TAG/')
               while [ -z "\$NEW_IMAGE" ] && [ \$NUMBER -lt 12 ]; do
                 echo "\$NUMBER: No new config-server image found. Waiting 10 seconds and trying again."
-                ((NUMBER=\$NUMBER+1))
+                ((NUMBER=NUMBER+1))
+                echo "Next number is \$NUMBER"
                 sleep 10
                 NEW_IMAGE=\$(docker \
                   -H $DOCKER_HOST \
@@ -137,7 +142,7 @@ pipeline {
                   --tlscert=$DOCKER_CERT \
                   --tlskey=$DOCKER_KEY \
                   --tlscacert=$DOCKER_CA \
-                  images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
+                  images | awk '/\$IMAGE/ && /\$TAG/')
               done
               if [ -z "\$NEW_IMAGE" ]; then
                 echo "New config-server image was found. Giving up."
