@@ -3,7 +3,8 @@ pipeline {
     label 'docker && maven'
   }
   environment {
-    TEST = false
+    CODECOV_TOKEN = credentials('config-server-codecov-token')
+    TEST = true
     DEPLOY_SNAPSHOT_ON_DATA = true
     DEPLOY_RELEASE_ON_DATA = true
 
@@ -55,6 +56,7 @@ pipeline {
           jacoco(
               execPattern: '**/coverage-reports/*.exec'
           )
+          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
         }
       }
     }
@@ -93,6 +95,7 @@ pipeline {
           usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
         ]) {
           sh '''
+            #!/bin/bash
             cp $KS target/keystore.jks
             docker \
               -H $DOCKER_HOST \
@@ -101,7 +104,7 @@ pipeline {
               --tlskey=$DOCKER_KEY \
               --tlscacert=$DOCKER_CA \
               build \
-              -t bremersee/config-server-ks:snapshot \
+              -t bremersee/config-server-configured-arm64:snapshot-${BUILD_NUMBER} \
               -f DockerfileConfiguredArm64 \
               --build-arg platform=arm64 \
               --build-arg keystore=target/keystore.jks \
@@ -116,6 +119,23 @@ pipeline {
               --build-arg adminUser=$ADMIN \
               --build-arg adminPassword=$ADMIN_PASSWORD \
               .
+              rm target/keystore.jks
+              NEW_IMAGE=docker \
+                -H $DOCKER_HOST \
+                --tlsverify \
+                --tlscert=$DOCKER_CERT \
+                --tlskey=$DOCKER_KEY \
+                --tlscacert=$DOCKER_CA \
+                images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/'
+              echo "New image \$NEW_IMAGE"
+              CONTAINER_ID=docker \
+                -H $DOCKER_HOST \
+                --tlsverify \
+                --tlscert=$DOCKER_CERT \
+                --tlskey=$DOCKER_KEY \
+                --tlscacert=$DOCKER_CA \
+                ps -aqf "name=^config-server"
+                echo "Container id is \$CONTAINER_ID"
           '''
         }
       }
