@@ -137,6 +137,13 @@ pipeline {
                 ((NUMBER=NUMBER+1))
                 echo "Next number is \$NUMBER"
                 sleep 10
+                docker \
+                                  -H $DOCKER_HOST \
+                                  --tlsverify \
+                                  --tlscert=$DOCKER_CERT \
+                                  --tlskey=$DOCKER_KEY \
+                                  --tlscacert=$DOCKER_CA \
+                                  images
                 NEW_IMAGE=\$(docker \
                   -H $DOCKER_HOST \
                   --tlsverify \
