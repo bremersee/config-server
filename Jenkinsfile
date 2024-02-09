@@ -143,7 +143,6 @@ pipeline {
                 --tlskey=$DOCKER_KEY \
                 --tlscacert=$DOCKER_CA \
                 run \
-                --rm \
                 --detach \
                 --tty \
                 --interactive \
