@@ -16,6 +16,7 @@
 
 package org.bremersee.configserver;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -126,6 +127,7 @@ public class WebSecurityProperties {
   @NoArgsConstructor
   static class SimpleUser implements Serializable, Principal {
 
+    @Serial
     private static final long serialVersionUID = -1393400622632455935L;
 
     private String name;

@@ -1,4 +1,5 @@
 target/
+git-base-dir/
 
 ### STS ###
 .apt_generated
