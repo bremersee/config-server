@@ -105,14 +105,6 @@ pipeline {
               --build-arg adminPassword=$ADMIN_PASSWORD \
               .
               rm target/keystore.jks
-              NEW_IMAGE=\$(docker \
-                -H $DOCKER_HOST \
-                --tlsverify \
-                --tlscert=$DOCKER_CERT \
-                --tlskey=$DOCKER_KEY \
-                --tlscacert=$DOCKER_CA \
-                images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
-              echo "New image \$NEW_IMAGE"
               CONTAINER_ID=\$(docker \
                 -H $DOCKER_HOST \
                 --tlsverify \
@@ -121,6 +113,32 @@ pipeline {
                 --tlscacert=$DOCKER_CA \
                 ps -aqf "name=^config-server")
                 echo "Container id is \$CONTAINER_ID"
+              if [ -z "\$CONTAINER_ID" ]; then
+                echo "No config-server container is running."
+              else
+                echo "Stopping config-server container with ID \$CONTAINER_ID."
+              fi
+              sleep 10
+              NUMBER=0
+              NEW_IMAGE=\$(docker \
+                -H $DOCKER_HOST \
+                --tlsverify \
+                --tlscert=$DOCKER_CERT \
+                --tlskey=$DOCKER_KEY \
+                --tlscacert=$DOCKER_CA \
+                images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
+              while [ -z "\$NEW_IMAGE" ] -a [ \$NUMBER -gt 3 ]; do
+                echo "\$NUMBER: No new config-server image found. Waiting 10 seconds and trying again."
+                ((NUMBER=\$NUMBER+1))
+                sleep 10
+                NEW_IMAGE=\$(docker \
+                  -H $DOCKER_HOST \
+                  --tlsverify \
+                  --tlscert=$DOCKER_CERT \
+                  --tlskey=$DOCKER_KEY \
+                  --tlscacert=$DOCKER_CA \
+                  images | awk '/config-server-configured-arm64/ && /snapshot-${BUILD_NUMBER}/')
+              done
           '''
         }
       }
