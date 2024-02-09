@@ -82,10 +82,8 @@ pipeline {
           sh '''
             #!/bin/bash
             cp $KS target/keystore.jks
-            IMAGE=config-server-configured-arm64
-            echo "Image \$IMAGE"
+            IMAGE=bremersee/config-server-configured-arm64
             TAG=snapshot-${BUILD_NUMBER}
-            echo "Tag \$TAG"
             docker \
               -H $DOCKER_HOST \
               --tlsverify \
@@ -93,7 +91,7 @@ pipeline {
               --tlskey=$DOCKER_KEY \
               --tlscacert=$DOCKER_CA \
               build \
-              -t bremersee/\$IMAGE:\$TAG \
+              -t \$IMAGE:\$TAG \
               -f DockerfileConfiguredArm64 \
               --build-arg platform=arm64 \
               --build-arg keystore=target/keystore.jks \
@@ -121,43 +119,47 @@ pipeline {
                 echo "No config-server container is running."
               else
                 echo "Stopping config-server container with ID \$CONTAINER_ID."
-              fi
-              sleep 10
-              NUMBER=0
-              NEW_IMAGE=\$(docker \
-                -H $DOCKER_HOST \
-                --tlsverify \
-                --tlscert=$DOCKER_CERT \
-                --tlskey=$DOCKER_KEY \
-                --tlscacert=$DOCKER_CA \
-                images | awk '/\$IMAGE/ && /\$TAG/')
-                echo "New image \$NEW_IMAGE"
-              while [ -z "\$NEW_IMAGE" ] && [ \$NUMBER -lt 12 ]; do
-                echo "\$NUMBER: No new config-server image found. Waiting 10 seconds and trying again."
-                ((NUMBER=NUMBER+1))
-                echo "Next number is \$NUMBER"
-                sleep 10
                 docker \
-                                  -H $DOCKER_HOST \
-                                  --tlsverify \
-                                  --tlscert=$DOCKER_CERT \
-                                  --tlskey=$DOCKER_KEY \
-                                  --tlscacert=$DOCKER_CA \
-                                  images
-                NEW_IMAGE=\$(docker \
                   -H $DOCKER_HOST \
                   --tlsverify \
                   --tlscert=$DOCKER_CERT \
                   --tlskey=$DOCKER_KEY \
                   --tlscacert=$DOCKER_CA \
-                  images | awk '/\$IMAGE/ && /\$TAG/')
-                echo "New image \$NEW_IMAGE"
-              done
-              if [ -z "\$NEW_IMAGE" ]; then
-                echo "New config-server image was found. Giving up."
-                exit 1
+                  stop \$CONTAINER_ID
+                sleep 10
+                docker \
+                  -H $DOCKER_HOST \
+                  --tlsverify \
+                  --tlscert=$DOCKER_CERT \
+                  --tlskey=$DOCKER_KEY \
+                  --tlscacert=$DOCKER_CA \
+                  rm \$CONTAINER_ID
               fi
-              echo "New config-server image is present: \$NEW_IMAGE"
+              sleep 10
+              docker \
+                -H $DOCKER_HOST \
+                --tlsverify \
+                --tlscert=$DOCKER_CERT \
+                --tlskey=$DOCKER_KEY \
+                --tlscacert=$DOCKER_CA \
+                run \
+                --rm
+                --detach \
+                --tty \
+                --interactive \
+                --name=config-server \
+                --restart=unless-stopped \
+                -v config_server_data:/data \
+                -p 11061:8080 \
+                \$IMAGE:\$TAG
+              sleep 10
+              docker \
+                -H $DOCKER_HOST \
+                --tlsverify \
+                --tlscert=$DOCKER_CERT \
+                --tlskey=$DOCKER_KEY \
+                --tlscacert=$DOCKER_CA \
+                image prune -a -f
           '''
         }
       }
