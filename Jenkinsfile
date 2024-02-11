@@ -4,7 +4,7 @@ pipeline {
   }
   environment {
     CODECOV_TOKEN = credentials('config-server-codecov-token')
-    SNAPSHOT_SITE = true
+    SNAPSHOT_SITE = false
     RELEASE_SITE = true
     DEPLOY_SNAPSHOT_ON_DATA = false
     DEPLOY_RELEASE_ON_DATA = true
@@ -21,9 +21,6 @@ pipeline {
   }
   stages {
     stage('Tools') {
-      agent {
-        label 'maven'
-      }
       tools {
         jdk 'jdk17'
         maven 'm3'
