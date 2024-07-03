@@ -7,41 +7,40 @@ ARG keystorePassword
 ARG keystoreAlias
 ARG keystoreSecret
 
-ARG clientUser
-ARG actuatorUser
-ARG adminUser
-ARG clientPassword
-ARG actuatorPassword
-ARG adminPassword
+#ARG clientUser
+#ARG actuatorUser
+#ARG adminUser
+#ARG clientPassword
+#ARG actuatorPassword
+#ARG adminPassword
 
 EXPOSE 8080
 VOLUME /data
 
+ENV SPRING_PROFILES_ACTIVE=default,composite,ldap
+
 ENV DATA_DIR=/data
-ENV ENCRYPTION_KEYSTORE_LOCATION=file:/data/etc/keystore.$keystoreType
+ENV ENCRYPTION_KEYSTORE_LOCATION=file:/app/keystore.$keystoreType
 ENV ENCRYPTION_KEYSTORE_TYPE=$keystoreType
 ENV ENCRYPTION_KEYSTORE_PASSWORD=$keystorePassword
 ENV ENCRYPTION_KEYSTORE_ALIAS=$keystoreAlias
 ENV ENCRYPTION_KEYSTORE_SECRET=$keystoreSecret
 
-ENV CLIENT_USER=$clientUser
-ENV CLIENT_PASSWORD=$clientPassword
-ENV ACTUATOR_USER=$actuatorUser
-ENV ACTUATOR_PASSWORD=$actuatorPassword
-ENV ADMIN_USER=$adminUser
-ENV ADMIN_PASSWORD=$adminPassword
+#ENV CLIENT_USER=$clientUser
+#ENV CLIENT_PASSWORD=$clientPassword
+#ENV ACTUATOR_USER=$actuatorUser
+#ENV ACTUATOR_PASSWORD=$actuatorPassword
+#ENV ADMIN_USER=$adminUser
+#ENV ADMIN_PASSWORD=$adminPassword
 
 RUN mkdir /data
-RUN mkdir /data/etc
 RUN mkdir /data/git
 RUN mkdir /data/log
 
-ADD src/main/resources/application.yml /data/etc/application.yml
-ADD $keystore /data/etc/keystore.$keystoreType
-
 RUN mkdir /app
+ADD $keystore /app/keystore.$keystoreType
 ADD target/config-server.jar /app/app.jar
 
 WORKDIR /app
 
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.config.location=/data/etc/application.yml", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]

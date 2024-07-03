@@ -199,7 +199,9 @@ class WebSecurityPropertiesTest {
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setApplicationAccess(value);
     assertThat(actual.buildApplicationAccess())
-        .isEqualTo("hasIpAddress('127.0.0.1/32') or hasAuthority('ROLE_CONFIG_CLIENT')");
+        .isEqualTo(String.format(
+            "hasIpAddress('127.0.0.1/32') or hasAuthority('%s')",
+            WebSecurityProperties.ROLE_APPLICATION));
   }
 
   /**
@@ -211,7 +213,9 @@ class WebSecurityPropertiesTest {
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setActuatorAccess(value);
     assertThat(actual.buildActuatorAccess())
-        .isEqualTo("hasIpAddress('127.0.0.1/32') or hasAuthority('ROLE_ACTUATOR')");
+        .isEqualTo(String.format(
+            "hasIpAddress('127.0.0.1/32') or hasAuthority('%s')",
+            WebSecurityProperties.ROLE_ACTUATOR));
   }
 
   /**
@@ -221,7 +225,10 @@ class WebSecurityPropertiesTest {
   void buildUsers() {
     SoftAssertions softly = new SoftAssertions();
 
-    SimpleUser clientUser = new SimpleUser("qwertz", "pass1", "ROLE_CONFIG_CLIENT");
+    SimpleUser clientUser = new SimpleUser(
+        "qwertz",
+        "pass1",
+        WebSecurityProperties.ROLE_APPLICATION );
     WebSecurityProperties actual = new WebSecurityProperties();
     actual.setClientUserName(clientUser.getName());
     actual.setClientUserPassword(clientUser.getPassword());
@@ -238,15 +245,21 @@ class WebSecurityPropertiesTest {
     softly.assertThat(user.toString()).doesNotContain(clientUser.getPassword());
 
     List<String> authorities = user.getAuthorities();
-    softly.assertThat(authorities).containsExactly("ROLE_CONFIG_CLIENT");
+    softly.assertThat(authorities).containsExactly(WebSecurityProperties.ROLE_APPLICATION);
 
-    SimpleUser actuatorUser = new SimpleUser("actuator", "pass2", "ROLE_ACTUATOR");
+    SimpleUser actuatorUser = new SimpleUser(
+        "actuator",
+        "pass2",
+        WebSecurityProperties.ROLE_ACTUATOR);
     actual.setActuatorUserName(actuatorUser.getName());
     actual.setActuatorUserPassword(actuatorUser.getPassword());
     users = actual.buildUsers();
     softly.assertThat(users).containsExactlyInAnyOrder(clientUser, actuatorUser);
 
-    SimpleUser adminUser = new SimpleUser("admin", "pass3", "ROLE_CONFIG_CLIENT", "ROLE_ACTUATOR");
+    SimpleUser adminUser = new SimpleUser(
+        "admin",
+        "pass3",
+        WebSecurityProperties.ROLE_APPLICATION, WebSecurityProperties.ROLE_ACTUATOR);
     actual.setAdminUserName(adminUser.getName());
     actual.setAdminUserPassword(adminUser.getPassword());
     users = actual.buildUsers();

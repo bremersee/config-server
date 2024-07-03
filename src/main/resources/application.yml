@@ -1,9 +1,8 @@
 spring:
   application:
     name: config-server
-
   profiles:
-    active: default,composite
+    active: default,composite,in-memory
 
   # Example of a composite configuration
   cloud:
@@ -50,18 +49,51 @@ management:
     health:
       show-details: when_authorized
     logfile:
-      external-file: ${logging.file.name}
+      external-file: ${DATA_DIR:${java.io.tmpdir}}/log/config-server-actuator.log
 
 bremersee:
   access:
     application-access: "false"
     actuator-access: "false"
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: in-memory
+
+bremersee:
+  access:
     client-user-name: ${CLIENT_USER:user}
     client-user-password: ${CLIENT_PASSWORD:changeit}
     actuator-user-name: ${ACTUATOR_USER:actuator}
     actuator-user-password: ${ACTUATOR_PASSWORD:changeit}
     admin-user-name: ${ADMIN_USER:admin}
     admin-user-password: ${ADMIN_PASSWORD:changeit}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: ldap
+
+bremersee:
+  ldaptive:
+    ldap-url: ldaps://dc1.eixe.bremersee.org ldaps://dc2.eixe.bremersee.org
+    connection-validator:
+      search-request:
+        base-dn: cn=users,dc=eixe,dc=bremersee,dc=org
+  authentication:
+    ldaptive:
+      template: active_directory
+      user-base-dn: cn=users,dc=eixe,dc=bremersee,dc=org
+      role-case-transformation: to_upper_case
+      role-prefix: ROLE_
+      role-string-replacements:
+        - regex: "[- ]"
+          replacement: "_"
 
 ---
 

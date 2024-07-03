@@ -1,0 +1,68 @@
+dn: dc=bremersee,dc=org
+objectclass: top
+objectclass: domain
+objectclass: extensibleObject
+dc: eixe
+
+# Organizational Units
+dn: ou=groups,dc=bremersee,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: groups
+
+dn: ou=people,dc=bremersee,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: people
+
+# Create People
+dn: uid=config,ou=people,dc=bremersee,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Claus Config
+sn: Config
+uid: config
+memberOf: cn=config-server-admins,ou=groups,dc=bremersee,dc=org
+userPassword: topsecret
+
+dn: uid=actuator,ou=people,dc=bremersee,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Anna Actuator
+sn: Actuator
+uid: actuator
+memberOf: cn=actuator-admins,ou=groups,dc=bremersee,dc=org
+userPassword: topsecret
+
+dn: uid=gustav,ou=people,dc=bremersee,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Gustav Anias Horn
+sn: Horn
+uid: gustav
+memberOf: cn=config-server-admins,ou=groups,dc=bremersee,dc=org
+memberOf: cn=actuator-admins,ou=groups,dc=bremersee,dc=org
+userPassword: topsecret
+
+# Create Groups
+dn: cn=config-server-admins,ou=groups,dc=bremersee,dc=org
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: config-server-admins
+ou: config-server-admins
+uniqueMember: uid=config,ou=people,dc=bremersee,dc=org
+uniqueMember: uid=gustav,ou=people,dc=bremersee,dc=org
+
+dn: cn=actuator-admins,ou=groups,dc=bremersee,dc=org
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: actuator-admins
+ou: actuator-admins
+uniqueMember: uid=gustav,ou=people,dc=bremersee,dc=org
+uniqueMember: uid=actuator,ou=people,dc=bremersee,dc=org

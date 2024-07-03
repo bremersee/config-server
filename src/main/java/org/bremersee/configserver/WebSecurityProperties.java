@@ -45,9 +45,15 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class WebSecurityProperties {
 
-  private static final String ROLE_APPLICATION = "ROLE_CONFIG_CLIENT";
+  /**
+   * Required role to access application endpoints.
+   */
+  public static final String ROLE_APPLICATION = "ROLE_CONFIG_SERVER_ADMINS";
 
-  private static final String ROLE_ACTUATOR = "ROLE_ACTUATOR";
+  /**
+   * Required role to access actuator endpoints.
+   */
+  public static final String ROLE_ACTUATOR = "ROLE_ACTUATOR_ADMINS";
 
   private static final String ROLE_APPLICATION_EXPRESSION =
       "hasAuthority('" + ROLE_APPLICATION + "')";

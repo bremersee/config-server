@@ -97,10 +97,16 @@ pipeline {
           file(credentialsId: 'config-server-keystore', variable: 'KS'),
           string(credentialsId: 'config-server-keystore-password', variable: 'KS_PASSWORD'),
           usernamePassword(credentialsId: 'config-server-keystore-entry', usernameVariable: 'ALIAS', passwordVariable: 'SECRET'),
-          usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'CLIENT', passwordVariable: 'CLIENT_PASSWORD'),
-          usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'ACTUATOR', passwordVariable: 'ACTUATOR_PASSWORD'),
-          usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
+          // usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'CLIENT', passwordVariable: 'CLIENT_PASSWORD'),
+          // usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'ACTUATOR', passwordVariable: 'ACTUATOR_PASSWORD'),
+          // usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
         ]) {
+//              --build-arg clientUser=$CLIENT \
+//              --build-arg clientPassword=$CLIENT_PASSWORD \
+//              --build-arg actuatorUser=$ACTUATOR \
+//              --build-arg actuatorPassword=$ACTUATOR_PASSWORD \
+//              --build-arg adminUser=$ADMIN \
+//              --build-arg adminPassword=$ADMIN_PASSWORD \
           sh '''
             #!/bin/bash
             cp $KS target/keystore.jks
@@ -121,12 +127,6 @@ pipeline {
               --build-arg keystorePassword=$KS_PASSWORD \
               --build-arg keystoreAlias=$ALIAS \
               --build-arg keystoreSecret=$SECRET \
-              --build-arg clientUser=$CLIENT \
-              --build-arg clientPassword=$CLIENT_PASSWORD \
-              --build-arg actuatorUser=$ACTUATOR \
-              --build-arg actuatorPassword=$ACTUATOR_PASSWORD \
-              --build-arg adminUser=$ADMIN \
-              --build-arg adminPassword=$ADMIN_PASSWORD \
               .
               rm target/keystore.jks
               CONTAINER_ID=\$(docker \
@@ -201,9 +201,9 @@ pipeline {
           file(credentialsId: 'config-server-keystore', variable: 'KS'),
           string(credentialsId: 'config-server-keystore-password', variable: 'KS_PASSWORD'),
           usernamePassword(credentialsId: 'config-server-keystore-entry', usernameVariable: 'ALIAS', passwordVariable: 'SECRET'),
-          usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'CLIENT', passwordVariable: 'CLIENT_PASSWORD'),
-          usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'ACTUATOR', passwordVariable: 'ACTUATOR_PASSWORD'),
-          usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
+//          usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'CLIENT', passwordVariable: 'CLIENT_PASSWORD'),
+//          usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'ACTUATOR', passwordVariable: 'ACTUATOR_PASSWORD'),
+//          usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
         ]) {
           sh '''
             #!/bin/bash
@@ -225,12 +225,6 @@ pipeline {
               --build-arg keystorePassword=$KS_PASSWORD \
               --build-arg keystoreAlias=$ALIAS \
               --build-arg keystoreSecret=$SECRET \
-              --build-arg clientUser=$CLIENT \
-              --build-arg clientPassword=$CLIENT_PASSWORD \
-              --build-arg actuatorUser=$ACTUATOR \
-              --build-arg actuatorPassword=$ACTUATOR_PASSWORD \
-              --build-arg adminUser=$ADMIN \
-              --build-arg adminPassword=$ADMIN_PASSWORD \
               .
               rm target/keystore.jks
               CONTAINER_ID=\$(docker \

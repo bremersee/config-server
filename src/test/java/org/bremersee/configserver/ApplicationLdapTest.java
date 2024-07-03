@@ -29,6 +29,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.TestSocketUtils;
 
 /**
  * The application tests.
@@ -36,24 +37,34 @@ import org.springframework.test.context.ActiveProfiles;
  * @author Christian Bremer
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+    "spring.autoconfigure.exclude="
+        + "org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration",
+    "spring.ldap.embedded.base-dn=dc=bremersee,dc=org",
+    "spring.ldap.embedded.credential.username=uid=admin",
+    "spring.ldap.embedded.credential.password=secret",
+    "spring.ldap.embedded.ldif=classpath:schema.ldif",
+    "spring.ldap.embedded.validation.enabled=false",
     "bremersee.access.application-access='false'", // disable local access
-    "bremersee.access.admin-user-name=testadmin",
-    "bremersee.access.admin-user-password=pass4admin",
-    "bremersee.access.actuator-access='false'", // disable local access
-    "bremersee.access.actuator-user-name=testactuator",
-    "bremersee.access.actuator-user-password=pass4actuator"
+    "bremersee.ldaptive.ldap-url=ldap://localhost:${spring.ldap.embedded.port}",
+    "bremersee.ldaptive.connection-validator.search-request.base-dn=ou=people,dc=bremersee,dc=org",
+    "bremersee.authentication.ldaptive.template=open_ldap",
+    "bremersee.authentication.ldaptive.user-base-dn=ou=people,dc=bremersee,dc=org",
+    "bremersee.authentication.ldaptive.role-case-transformation=to_upper_case",
+    "bremersee.authentication.ldaptive.role-prefix=ROLE_",
+    "bremersee.authentication.ldaptive.role-string-replacements[0].regex=[- ]",
+    "bremersee.authentication.ldaptive.role-string-replacements[0].replacement=_"
 })
-@ActiveProfiles({"test"})
+@ActiveProfiles({"test", "ldap"})
 @Slf4j
-public class ApplicationTests {
+public class ApplicationLdapTest {
 
-  private static final String user = "testadmin";
+  private static final String user = "gustav";
 
-  private static final String pass = "pass4admin";
+  private static final String pass = "topsecret";
 
-  private static final String actuatorUser = "testactuator";
+  private static final String actuatorUser = "actuator";
 
-  private static final String actuatorPass = "pass4actuator";
+  private static final String actuatorPass = "topsecret";
 
   /**
    * The rest template.
@@ -61,6 +72,18 @@ public class ApplicationTests {
   @Autowired
   TestRestTemplate restTemplate;
 
+  /**
+   * Sets embedded ldap port.
+   */
+  @BeforeAll
+  static void setEmbeddedLdapPort() {
+    int embeddedLdapPort = TestSocketUtils.findAvailableTcpPort();
+    System.setProperty("spring.ldap.embedded.port", String.valueOf(embeddedLdapPort));
+  }
+
+  /**
+   * Clean git base directory.
+   */
   @BeforeAll
   static void cleanGitBaseDir() {
     File gitBaseDir = new File("./git-base-dir");
