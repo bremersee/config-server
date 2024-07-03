@@ -6,7 +6,7 @@ pipeline {
     CODECOV_TOKEN = credentials('config-server-codecov-token')
     SNAPSHOT_SITE = false
     RELEASE_SITE = true
-    DEPLOY_SNAPSHOT_ON_DATA = false
+    DEPLOY_SNAPSHOT_ON_DATA = true
     DEPLOY_RELEASE_ON_DATA = true
     DEPLOY_SNAPSHOT_ON_SERVER = false
     DEPLOY_RELEASE_ON_SERVER = false
