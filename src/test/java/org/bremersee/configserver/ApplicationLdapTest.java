@@ -197,4 +197,5 @@ public class ApplicationLdapTest {
     assertThat(response.getBody())
         .contains("testkey", "testvalue");
   }
+
 }
