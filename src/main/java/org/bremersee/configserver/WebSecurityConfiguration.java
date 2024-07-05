@@ -117,4 +117,5 @@ public class WebSecurityConfiguration {
         .toArray(UserDetails[]::new);
     return new InMemoryUserDetailsManager(userDetails);
   }
+
 }
