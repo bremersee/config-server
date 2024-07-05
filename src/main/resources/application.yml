@@ -94,6 +94,12 @@ bremersee:
       role-string-replacements:
         - regex: "[- ]"
           replacement: "_"
+        - regex: "_admins"
+          replacement: "_admin"
+        - regex: "_ADMINS"
+          replacement: "_ADMIN"
+      default-roles:
+        - "ROLE_LOCAL_USER"
 
 ---
 

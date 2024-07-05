@@ -78,7 +78,7 @@ public class WebSecurityConfiguration {
    */
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    final String appName = env.getProperty("spring.application.name", "config-server");
+    String appName = env.getProperty("spring.application.name", "config-server");
     return http
         .authorizeHttpRequests(requests -> requests
             .requestMatchers(

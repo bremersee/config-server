@@ -48,12 +48,12 @@ public class WebSecurityProperties {
   /**
    * Required role to access application endpoints.
    */
-  public static final String ROLE_APPLICATION = "ROLE_CONFIG_SERVER_ADMINS";
+  public static final String ROLE_APPLICATION = "ROLE_CONFIG_SERVER_ADMIN";
 
   /**
    * Required role to access actuator endpoints.
    */
-  public static final String ROLE_ACTUATOR = "ROLE_ACTUATOR_ADMINS";
+  public static final String ROLE_ACTUATOR = "ROLE_ACTUATOR_ADMIN";
 
   private static final String ROLE_APPLICATION_EXPRESSION =
       "hasAuthority('" + ROLE_APPLICATION + "')";

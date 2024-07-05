@@ -52,7 +52,11 @@ import org.springframework.test.util.TestSocketUtils;
     "bremersee.authentication.ldaptive.role-case-transformation=to_upper_case",
     "bremersee.authentication.ldaptive.role-prefix=ROLE_",
     "bremersee.authentication.ldaptive.role-string-replacements[0].regex=[- ]",
-    "bremersee.authentication.ldaptive.role-string-replacements[0].replacement=_"
+    "bremersee.authentication.ldaptive.role-string-replacements[0].replacement=_",
+    "bremersee.authentication.ldaptive.role-string-replacements[1].regex=_admins",
+    "bremersee.authentication.ldaptive.role-string-replacements[1].replacement=_admin",
+    "bremersee.authentication.ldaptive.role-string-replacements[2].regex=_ADMINS",
+    "bremersee.authentication.ldaptive.role-string-replacements[2].replacement=_ADMINS",
 })
 @ActiveProfiles({"test", "ldap"})
 @Slf4j
