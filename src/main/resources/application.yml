@@ -1,33 +1,40 @@
 spring:
   application:
-    name: ${APPLICATION_NAME:config-server}
+    name: config-server
+  profiles:
+    active: default,composite,in-memory
+
+  # Example of a composite configuration
   cloud:
     config:
       server:
-        git:
-          uri: ${GIT_URI:https://github.com/bremersee/config}
-          default-label: ${GIT_DEFAULT_LABEL:master}
+        fail-on-composite-error: false
+        default-label: develop
+        composite:
+          - type: git
+            uri: https://github.com/${ORGANISATION:bremersee}/{application}
+            basedir: ${DATA_DIR:${java.io.tmpdir}}/git
+          - type: git
+            uri: https://github.com/${ORGANISATION:bremersee}/config
+            basedir: ${DATA_DIR:${java.io.tmpdir}}/git/config
 
 encrypt:
   key-store:
-    location: ${ENCRYPTION_KEY_STORE_LOCATION:classpath:/encryption.jks}
-    password: ${ENCRYPTION_KEY_STORE_PASSWORD:changeit}
-    alias: ${ENCRYPTION_KEY_STORE_ALIAS:encryption}
-    secret: ${ENCRYPTION_KEY_STORE_SECRET:changeit}
+    location: ${ENCRYPTION_KEYSTORE_LOCATION:classpath:/encryption.jks}
+    type: ${ENCRYPTION_KEYSTORE_TYPE:jks}
+    password: ${ENCRYPTION_KEYSTORE_PASSWORD:changeit}
+    alias: ${ENCRYPTION_KEYSTORE_ALIAS:encryption}
+    secret: ${ENCRYPTION_KEYSTORE_SECRET:changeit}
 
 logging:
   level:
-    org.springframework: ${LOG_LEVEL_SPRING:INFO}
-    org.bremersee: ${LOG_LEVEL_BREMERSEE:DEBUG}
-
-server:
-  forward-headers-strategy: native
-  port: ${SERVER_PORT:8888}
-  servlet:
-    context-path: ${CONTEXT_PATH:/}
-  tomcat:
-    accesslog:
-      enabled: false
+    org.springframework: INFO
+    org.bremersee: INFO
+  file:
+    name: ${DATA_DIR:${java.io.tmpdir}}/log/config-server.log
+  logback:
+    rollingpolicy:
+      max-history: 25
 
 management:
   endpoints:
@@ -40,91 +47,81 @@ management:
         allowed-origins: "*"
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
+    logfile:
+      external-file: ${DATA_DIR:${java.io.tmpdir}}/log/config-server-actuator.log
 
 bremersee:
   access:
     application-access: "false"
-    #${APPLICATION_ACCESS:hasIpAddress('127.0.0.1/32') or hasIpAddress('::1')}
     actuator-access: "false"
-    #${ACTUATOR_ACCESS:hasIpAddress('127.0.0.1/32') or hasIpAddress('::1')}
-    client-user-name: ${CLIENT_USER_NAME:user}
-    client-user-password: ${CLIENT_USER_PASSWORD:changeit}
-    actuator-user-name: ${ACTUATOR_USER_NAME:}
-    actuator-user-password: ${ACTUATOR_USER_PASSWORD:}
-    admin-user-name: ${ADMIN_USER_NAME:}
-    admin-user-password: ${ADMIN_USER_PASSWORD:}
 
 ---
 
 spring:
   config:
     activate:
-      on-profile: docker
-  cloud:
-    config:
-      server:
-        git:
-          # this will be a local copy of the repo:
-          basedir: ${GIT_BASEDIR:/opt/basedir}
-          uri: ${GIT_URI:https://github.com/bremersee/config}
-          default-label: ${GIT_DEFAULT_LABEL:master}
-          ignore-local-ssh-settings: ${GIT_IGNORE_LOCAL_SSH_SETTINGS:false}
-          private-key: ${GIT_PRIVATE_KEY:}
-          host-key: ${GIT_HOST_KEY:AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==}
-          host-key-algorithm: ${GIT_HOST_ALGORITHM:ssh-rsa}
-          # known-hosts-file: ${GIT_KNOWN_HOSTS_FILE:/etc/config-server/known_hosts}
+      on-profile: in-memory
 
-logging:
-  file:
-    name: ${LOG_PATH:/opt/log}/${spring.application.name:config-server}_${HOSTNAME:localhost}.log
-
-management:
-  endpoint:
-    health:
-      show-details: when_authorized
-    logfile:
-      external-file: ${logging.file.name}
-
-server:
-  tomcat:
-    accesslog:
-      enabled: ${ACCESS_LOG_ENABLED:true}
-      directory: ${LOG_PATH:/opt/log}
-      prefix: ${spring.application.name:config-server}_${HOSTNAME:unknown}_access_log
+bremersee:
+  access:
+    client-user-name: ${CLIENT_USER:user}
+    client-user-password: ${CLIENT_PASSWORD:changeit}
+    actuator-user-name: ${ACTUATOR_USER:actuator}
+    actuator-user-password: ${ACTUATOR_PASSWORD:changeit}
+    admin-user-name: ${ADMIN_USER:admin}
+    admin-user-password: ${ADMIN_PASSWORD:changeit}
 
 ---
 
 spring:
   config:
     activate:
-      on-profile: debian
+      on-profile: ldap
+
+bremersee:
+  ldaptive:
+    ldap-url: ldaps://dc1.eixe.bremersee.org ldaps://dc2.eixe.bremersee.org
+    connection-validator:
+      search-request:
+        base-dn: cn=users,dc=eixe,dc=bremersee,dc=org
+  authentication:
+    ldaptive:
+      template: active_directory
+      user-base-dn: cn=users,dc=eixe,dc=bremersee,dc=org
+      role-case-transformation: to_upper_case
+      role-prefix: ROLE_
+      role-string-replacements:
+        - regex: "[- ]"
+          replacement: "_"
+        - regex: "_ADMINS"
+          replacement: "_ADMIN"
+      default-roles:
+        - "ROLE_LOCAL_USER"
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
   cloud:
     config:
       server:
         git:
-          # this will be a local copy of the repo:
-          basedir: ${GIT_BASEDIR:/var/lib/spring-config-server/basedir}
-          ignore-local-ssh-settings: ${GIT_IGNORE_LOCAL_SSH_SETTINGS:false}
-          private-key: ${GIT_PRIVATE_KEY:}
-          host-key: ${GIT_HOST_KEY:AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==}
-          host-key-algorithm: ${GIT_HOST_ALGORITHM:ssh-rsa}
-          # known-hosts-file: ${GIT_KNOWN_HOSTS_FILE:/etc/config-server/known_hosts}
+          uri: https://github.com/bremersee/config-server
+          default-label: develop
+          basedir: ./git-base-dir
 
 encrypt:
   key-store:
-    location: ${ENCRYPTION_KEY_STORE_LOCATION:file:/var/log/spring-config-server/encryption.jks}
+    location: classpath:/encryption.jks
+    password: changeit
+    alias: encryption
+    secret: changeit
 
 logging:
-  file:
-    name: /var/log/spring-config-server/config-server.log
-  logback:
-    rollingpolicy:
-      max-history: 25
+  level:
+    org.springframework: INFO
+    org.bremersee: DEBUG
 
-server:
-  tomcat:
-    accesslog:
-      enabled: true
-      directory: /var/log/spring-config-server
-      prefix: access_log

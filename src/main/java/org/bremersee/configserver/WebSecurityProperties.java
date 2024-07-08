@@ -16,6 +16,7 @@
 
 package org.bremersee.configserver;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -44,9 +45,15 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class WebSecurityProperties {
 
-  private static final String ROLE_APPLICATION = "ROLE_CONFIG_CLIENT";
+  /**
+   * Required role to access application endpoints.
+   */
+  public static final String ROLE_APPLICATION = "ROLE_CONFIG_SERVER_ADMIN";
 
-  private static final String ROLE_ACTUATOR = "ROLE_ACTUATOR";
+  /**
+   * Required role to access actuator endpoints.
+   */
+  public static final String ROLE_ACTUATOR = "ROLE_ACTUATOR_ADMIN";
 
   private static final String ROLE_APPLICATION_EXPRESSION =
       "hasAuthority('" + ROLE_APPLICATION + "')";
@@ -126,6 +133,7 @@ public class WebSecurityProperties {
   @NoArgsConstructor
   static class SimpleUser implements Serializable, Principal {
 
+    @Serial
     private static final long serialVersionUID = -1393400622632455935L;
 
     private String name;

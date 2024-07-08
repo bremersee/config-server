@@ -17,37 +17,42 @@
 package org.bremersee.configserver;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
- * Extended spring boot web security configuration:
+ * Spring boot web security configuration.
  * <ul>
  * <li>Disables CSRF
- * <li>Enables Basic Authentication for users configured with {@link WebSecurityConfiguration}
- * <li>Enables free access based on IP addresses configured with {@link WebSecurityConfiguration}
+ * <li>Enables Basic Authentication for users configured with {@link WebSecurityProperties}
+ * <li>Enables free access based on IP addresses configured with {@link WebSecurityProperties}
  * </ul>
  *
  * @author Christian Bremer
  */
 @Configuration
 @EnableConfigurationProperties(WebSecurityProperties.class)
+@EnableWebSecurity
 @Slf4j
-public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfiguration {
 
   private final Environment env;
 
@@ -59,52 +64,58 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
    * @param env the environment
    * @param properties the security properties
    */
-  @Autowired
   public WebSecurityConfiguration(Environment env, WebSecurityProperties properties) {
     this.env = env;
     this.properties = properties;
   }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    final String appName = env.getProperty("spring.application.name", "config-server");
-    http
-        .authorizeRequests()
-        .requestMatchers(EndpointRequest.to(InfoEndpoint.class))
-        .permitAll()
-        .requestMatchers(EndpointRequest.to(HealthEndpoint.class))
-        .permitAll()
-        .requestMatchers(EndpointRequest.toAnyEndpoint())
-        .access(properties.buildActuatorAccess())
-        .antMatchers("/**")
-        .access(properties.buildApplicationAccess())
-        .and()
-        .csrf().disable()
-        .userDetailsService(userDetailsService())
-        .httpBasic().realmName(appName);
+  /**
+   * Configures the security filter chain.
+   *
+   * @param http the http security
+   * @return the security filter chain
+   * @throws Exception if something goes wrong
+   */
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    String appName = env.getProperty("spring.application.name", "config-server");
+    return http
+        .authorizeHttpRequests(requests -> requests
+            .requestMatchers(
+                EndpointRequest.to(InfoEndpoint.class),
+                EndpointRequest.to(HealthEndpoint.class))
+            .permitAll()
+            .requestMatchers(EndpointRequest.toAnyEndpoint())
+            .access(new WebExpressionAuthorizationManager(properties.buildActuatorAccess()))
+            .requestMatchers(new AntPathRequestMatcher("/**"))
+            .access(new WebExpressionAuthorizationManager(properties.buildApplicationAccess())))
+        .csrf(AbstractHttpConfigurer::disable)
+        .httpBasic(configurer -> configurer.realmName(appName))
+        .build();
   }
 
   /**
    * Creates an in-memory user details service based on the users configured in
-   * {@link WebSecurityConfiguration}.
+   * {@link WebSecurityProperties}.
    *
    * @return the user details service for the basic authentication
    */
+  @Profile({"in-memory"})
   @Bean
-  @Override
   public UserDetailsService userDetailsService() {
 
     log.info("Building user details service with {}", properties);
     final PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     final UserDetails[] userDetails = properties.buildUsers().stream().map(
-        simpleUser -> User.builder()
-            .username(simpleUser.getName())
-            .password(simpleUser.getPassword())
-            .authorities(
-                simpleUser.getAuthorities().toArray(new String[0]))
-            .passwordEncoder(encoder::encode)
-            .build())
+            simpleUser -> User.builder()
+                .username(simpleUser.getName())
+                .password(simpleUser.getPassword())
+                .authorities(
+                    simpleUser.getAuthorities().toArray(new String[0]))
+                .passwordEncoder(encoder::encode)
+                .build())
         .toArray(UserDetails[]::new);
     return new InMemoryUserDetailsManager(userDetails);
   }
+
 }

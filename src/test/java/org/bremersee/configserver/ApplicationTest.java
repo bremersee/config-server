@@ -18,13 +18,17 @@ package org.bremersee.configserver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  * The application tests.
@@ -32,14 +36,18 @@ import org.springframework.http.ResponseEntity;
  * @author Christian Bremer
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-    "bremersee.access.application-access=hasIpAddress('213.136.81.244')", // disable local access
+    "spring.autoconfigure.exclude="
+        + "org.springframework.boot.autoconfigure.ldap.embedded.EmbeddedLdapAutoConfiguration",
+    "bremersee.access.application-access='false'", // disable local access
     "bremersee.access.admin-user-name=testadmin",
     "bremersee.access.admin-user-password=pass4admin",
-    "bremersee.access.actuator-access=hasIpAddress('213.136.81.244')", // disable local access
+    "bremersee.access.actuator-access='false'", // disable local access
     "bremersee.access.actuator-user-name=testactuator",
     "bremersee.access.actuator-user-password=pass4actuator"
 })
-public class ApplicationTests {
+@ActiveProfiles({"test", "in-memory"})
+@Slf4j
+public class ApplicationTest {
 
   private static final String user = "testadmin";
 
@@ -56,6 +64,27 @@ public class ApplicationTests {
   TestRestTemplate restTemplate;
 
   /**
+   * Clean git base directory.
+   */
+  @BeforeAll
+  static void cleanGitBaseDir() {
+    File gitBaseDir = new File("./git-base-dir");
+    if (gitBaseDir.exists() && gitBaseDir.isDirectory() && deleteDirectory(gitBaseDir)) {
+      log.info("./git-base-dir was deleted");
+    }
+  }
+
+  private static boolean deleteDirectory(File directoryToBeDeleted) {
+    File[] allContents = directoryToBeDeleted.listFiles();
+    if (allContents != null) {
+      for (File file : allContents) {
+        deleteDirectory(file);
+      }
+    }
+    return directoryToBeDeleted.delete();
+  }
+
+  /**
    * Encrypt and decrypt.
    */
   @Test
@@ -66,16 +95,26 @@ public class ApplicationTests {
     ResponseEntity<String> response = restTemplate
         .withBasicAuth(user, pass)
         .postForEntity("/encrypt", expected, String.class);
-    softly.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    softly.assertThat(response.getBody()).isNotNull();
+    softly
+        .assertThat(response.getStatusCode())
+        .isEqualTo(HttpStatus.OK);
+    softly
+        .assertThat(response.getBody())
+        .isNotNull();
     String encrypted = response.getBody();
 
     response = restTemplate
         .withBasicAuth(user, pass)
         .postForEntity("/decrypt", encrypted, String.class);
-    softly.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    softly.assertThat(response.getBody()).isNotNull();
-    softly.assertThat(response.getBody()).isEqualTo(expected);
+    softly
+        .assertThat(response.getStatusCode())
+        .isEqualTo(HttpStatus.OK);
+    softly
+        .assertThat(response.getBody())
+        .isNotNull();
+    softly
+        .assertThat(response.getBody())
+        .isEqualTo(expected);
 
     softly.assertAll();
   }
@@ -87,7 +126,8 @@ public class ApplicationTests {
   void fetchHealth() {
     ResponseEntity<String> response = restTemplate
         .getForEntity("/actuator/health", String.class);
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getStatusCode())
+        .isEqualTo(HttpStatus.OK);
   }
 
   /**
@@ -97,7 +137,8 @@ public class ApplicationTests {
   void fetchInfo() {
     ResponseEntity<String> response = restTemplate
         .getForEntity("/actuator/info", String.class);
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getStatusCode())
+        .isEqualTo(HttpStatus.OK);
   }
 
   /**
@@ -108,7 +149,8 @@ public class ApplicationTests {
     ResponseEntity<String> response = restTemplate
         .withBasicAuth(actuatorUser, actuatorPass)
         .getForEntity("/actuator/metrics", String.class);
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getStatusCode())
+        .isEqualTo(HttpStatus.OK);
   }
 
   /**
@@ -118,7 +160,20 @@ public class ApplicationTests {
   void fetchMetricsAndExpectUnauthorized() {
     ResponseEntity<String> response = restTemplate
         .getForEntity("/actuator/metrics", String.class);
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    assertThat(response.getStatusCode())
+        .isEqualTo(HttpStatus.UNAUTHORIZED);
+  }
+
+  /**
+   * Fetch test config.
+   */
+  @Test
+  void fetchTestConfig() {
+    ResponseEntity<String> response = restTemplate
+        .withBasicAuth(user, pass)
+        .getForEntity("/test-config/default", String.class);
+    assertThat(response.getBody())
+        .contains("testkey", "testvalue");
   }
 
 }
