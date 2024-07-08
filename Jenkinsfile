@@ -43,41 +43,6 @@ pipeline {
         }
       }
     }
-    stage('Deploy snapshot site') {
-      when {
-        allOf {
-          environment name: 'SNAPSHOT_SITE', value: 'true'
-          anyOf {
-            branch 'develop'
-            branch 'feature/*'
-          }
-        }
-      }
-      steps {
-        sh 'mvn -B clean site-deploy'
-      }
-      post {
-        always {
-          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
-        }
-      }
-    }
-    stage('Deploy release site') {
-      when {
-        allOf {
-          branch 'main'
-          environment name: 'RELEASE_SITE', value: 'true'
-        }
-      }
-      steps {
-        sh 'mvn -B -P gh-pages-site clean site site:stage scm-publish:publish-scm'
-      }
-      post {
-        always {
-          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
-        }
-      }
-    }
     stage('Deploy Snapshot On Data') {
       when {
         allOf {
@@ -314,6 +279,41 @@ pipeline {
       }
       steps {
         sh 'mvn -B -DskipTests=true -Dhttp.protocol.expect-continue=true -Pdebian11,deploy-to-repo-debian-bullseye clean deploy'
+      }
+    }
+    stage('Deploy snapshot site') {
+      when {
+        allOf {
+          environment name: 'SNAPSHOT_SITE', value: 'true'
+          anyOf {
+            branch 'develop'
+            branch 'feature/*'
+          }
+        }
+      }
+      steps {
+        sh 'mvn -B clean site-deploy'
+      }
+      post {
+        always {
+          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
+        }
+      }
+    }
+    stage('Deploy release site') {
+      when {
+        allOf {
+          branch 'main'
+          environment name: 'RELEASE_SITE', value: 'true'
+        }
+      }
+      steps {
+        sh 'mvn -B -P gh-pages-site clean site site:stage scm-publish:publish-scm'
+      }
+      post {
+        always {
+          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
+        }
       }
     }
   }
