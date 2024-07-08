@@ -1,6 +1,6 @@
 # Bremersee's Spring Cloud Config Server
 
-[![codecov](https://codecov.io/gh/bremersee/config-server/branch/develop/graph/badge.svg)](https://codecov.io/gh/bremersee/config-server)
+[![codecov](https://codecov.io/gh/bremersee/config-server/branch/main/graph/badge.svg)](https://codecov.io/gh/bremersee/config-server)
 
 This config server is more or less a plain Spring Cloud Config Server:
 
