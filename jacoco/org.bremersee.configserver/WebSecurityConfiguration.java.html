@@ -17,37 +17,42 @@
 package org.bremersee.configserver;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
- * Extended spring boot web security configuration:
+ * Spring boot web security configuration.
  * &lt;ul&gt;
  * &lt;li&gt;Disables CSRF
- * &lt;li&gt;Enables Basic Authentication for users configured with {@link WebSecurityConfiguration}
- * &lt;li&gt;Enables free access based on IP addresses configured with {@link WebSecurityConfiguration}
+ * &lt;li&gt;Enables Basic Authentication for users configured with {@link WebSecurityProperties}
+ * &lt;li&gt;Enables free access based on IP addresses configured with {@link WebSecurityProperties}
  * &lt;/ul&gt;
  *
  * @author Christian Bremer
  */
 @Configuration
 @EnableConfigurationProperties(WebSecurityProperties.class)
-<span class="fc" id="L49">@Slf4j</span>
-public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+<span class="fc" id="L54">@Slf4j</span>
+public class WebSecurityConfiguration {
 
   private final Environment env;
 
@@ -59,53 +64,59 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
    * @param env the environment
    * @param properties the security properties
    */
-  @Autowired
-<span class="fc" id="L63">  public WebSecurityConfiguration(Environment env, WebSecurityProperties properties) {</span>
-<span class="fc" id="L64">    this.env = env;</span>
-<span class="fc" id="L65">    this.properties = properties;</span>
-<span class="fc" id="L66">  }</span>
+<span class="fc" id="L67">  public WebSecurityConfiguration(Environment env, WebSecurityProperties properties) {</span>
+<span class="fc" id="L68">    this.env = env;</span>
+<span class="fc" id="L69">    this.properties = properties;</span>
+<span class="fc" id="L70">  }</span>
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-<span class="fc" id="L70">    final String appName = env.getProperty(&quot;spring.application.name&quot;, &quot;config-server&quot;);</span>
-<span class="fc" id="L71">    http</span>
-<span class="fc" id="L72">        .authorizeRequests()</span>
-<span class="fc" id="L73">        .requestMatchers(EndpointRequest.to(InfoEndpoint.class))</span>
-<span class="fc" id="L74">        .permitAll()</span>
-<span class="fc" id="L75">        .requestMatchers(EndpointRequest.to(HealthEndpoint.class))</span>
-<span class="fc" id="L76">        .permitAll()</span>
-<span class="fc" id="L77">        .requestMatchers(EndpointRequest.toAnyEndpoint())</span>
-<span class="fc" id="L78">        .access(properties.buildActuatorAccess())</span>
-<span class="fc" id="L79">        .antMatchers(&quot;/**&quot;)</span>
-<span class="fc" id="L80">        .access(properties.buildApplicationAccess())</span>
-<span class="fc" id="L81">        .and()</span>
-<span class="fc" id="L82">        .csrf().disable()</span>
-<span class="fc" id="L83">        .userDetailsService(userDetailsService())</span>
-<span class="fc" id="L84">        .httpBasic().realmName(appName);</span>
-<span class="fc" id="L85">  }</span>
+  /**
+   * Configures the security filter chain.
+   *
+   * @param http the http security
+   * @return the security filter chain
+   * @throws Exception if something goes wrong
+   */
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="fc" id="L81">    String appName = env.getProperty(&quot;spring.application.name&quot;, &quot;config-server&quot;);</span>
+<span class="fc" id="L82">    return http</span>
+<span class="fc" id="L83">        .authorizeHttpRequests(requests -&gt; requests</span>
+<span class="fc" id="L84">            .requestMatchers(</span>
+<span class="fc" id="L85">                EndpointRequest.to(InfoEndpoint.class),</span>
+<span class="fc" id="L86">                EndpointRequest.to(HealthEndpoint.class))</span>
+<span class="fc" id="L87">            .permitAll()</span>
+<span class="fc" id="L88">            .requestMatchers(EndpointRequest.toAnyEndpoint())</span>
+<span class="fc" id="L89">            .access(new WebExpressionAuthorizationManager(properties.buildActuatorAccess()))</span>
+<span class="fc" id="L90">            .requestMatchers(new AntPathRequestMatcher(&quot;/**&quot;))</span>
+<span class="fc" id="L91">            .access(new WebExpressionAuthorizationManager(properties.buildApplicationAccess())))</span>
+<span class="fc" id="L92">        .csrf(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L93">        .httpBasic(configurer -&gt; configurer.realmName(appName))</span>
+<span class="fc" id="L94">        .build();</span>
+  }
 
   /**
    * Creates an in-memory user details service based on the users configured in
-   * {@link WebSecurityConfiguration}.
+   * {@link WebSecurityProperties}.
    *
    * @return the user details service for the basic authentication
    */
+  @Profile({&quot;in-memory&quot;})
   @Bean
-  @Override
   public UserDetailsService userDetailsService() {
 
-<span class="fc" id="L97">    log.info(&quot;Building user details service with {}&quot;, properties);</span>
-<span class="fc" id="L98">    final PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();</span>
-<span class="fc" id="L99">    final UserDetails[] userDetails = properties.buildUsers().stream().map(</span>
-<span class="fc" id="L100">        simpleUser -&gt; User.builder()</span>
-<span class="fc" id="L101">            .username(simpleUser.getName())</span>
-<span class="fc" id="L102">            .password(simpleUser.getPassword())</span>
-<span class="fc" id="L103">            .authorities(</span>
-<span class="fc" id="L104">                simpleUser.getAuthorities().toArray(new String[0]))</span>
-<span class="fc" id="L105">            .passwordEncoder(encoder::encode)</span>
-<span class="fc" id="L106">            .build())</span>
-<span class="fc" id="L107">        .toArray(UserDetails[]::new);</span>
-<span class="fc" id="L108">    return new InMemoryUserDetailsManager(userDetails);</span>
+<span class="fc" id="L107">    log.info(&quot;Building user details service with {}&quot;, properties);</span>
+<span class="fc" id="L108">    final PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();</span>
+<span class="fc" id="L109">    final UserDetails[] userDetails = properties.buildUsers().stream().map(</span>
+<span class="fc" id="L110">            simpleUser -&gt; User.builder()</span>
+<span class="fc" id="L111">                .username(simpleUser.getName())</span>
+<span class="fc" id="L112">                .password(simpleUser.getPassword())</span>
+<span class="fc" id="L113">                .authorities(</span>
+<span class="fc" id="L114">                    simpleUser.getAuthorities().toArray(new String[0]))</span>
+<span class="fc" id="L115">                .passwordEncoder(encoder::encode)</span>
+<span class="fc" id="L116">                .build())</span>
+<span class="fc" id="L117">        .toArray(UserDetails[]::new);</span>
+<span class="fc" id="L118">    return new InMemoryUserDetailsManager(userDetails);</span>
   }
+
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

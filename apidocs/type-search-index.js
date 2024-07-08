@@ -1,1 +1,1 @@
-typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"org.bremersee.configserver","l":"Application"},{"p":"org.bremersee.configserver","l":"WebSecurityConfiguration"},{"p":"org.bremersee.configserver","l":"WebSecurityProperties"}]
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"org.bremersee.configserver","l":"Application"},{"p":"org.bremersee.configserver","l":"WebSecurityConfiguration"},{"p":"org.bremersee.configserver","l":"WebSecurityProperties"}];updateSearchResults();

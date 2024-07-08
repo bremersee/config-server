@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"org.bremersee.configserver"}]
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.bremersee.configserver"}];updateSearchResults();
