@@ -37,11 +37,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * Spring boot web security configuration.
- * <ul>
- * <li>Disables CSRF
- * <li>Enables Basic Authentication for users configured with {@link WebSecurityProperties}
- * <li>Enables free access based on IP addresses configured with {@link WebSecurityProperties}
- * </ul>
  *
  * @author Christian Bremer
  */
