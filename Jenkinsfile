@@ -1,19 +1,20 @@
 pipeline {
   agent {
-    label 'docker && maven'
+    label 'jdk21 && maven && docker'
   }
   environment {
     CODECOV_TOKEN = credentials('config-server-codecov-token')
-    SNAPSHOT_SITE = true
-    RELEASE_SITE = true
+    SNAPSHOT_SITE = false
+    RELEASE_SITE = false
     DEPLOY_SNAPSHOT_ON_DATA = false
-    DEPLOY_RELEASE_ON_DATA = true
+    DEPLOY_RELEASE_ON_DATA = false
     DEPLOY_SNAPSHOT_ON_SERVER = false
     DEPLOY_RELEASE_ON_SERVER = false
     DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE = false
+    CLEAN = true
   }
   tools {
-    jdk 'jdk17'
+    jdk 'jdk21'
     maven 'm3'
   }
   options {
@@ -22,7 +23,7 @@ pipeline {
   stages {
     stage('Tools') {
       tools {
-        jdk 'jdk17'
+        jdk 'jdk21'
         maven 'm3'
       }
       steps {
@@ -32,7 +33,7 @@ pipeline {
     }
     stage('Build') {
       steps {
-        sh 'mvn -B clean package'
+        sh 'mvn -B -P build-system clean package'
       }
       post {
         always {
@@ -314,6 +315,14 @@ pipeline {
         always {
           sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
         }
+      }
+    }
+    stage('Clean') {
+      when {
+        environment name: 'CLEAN', value: 'true'
+      }
+      steps {
+        sh 'mvn -B clean'
       }
     }
   }

@@ -17,26 +17,23 @@
 package org.bremersee.configserver;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
-import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.bremersee.spring.boot.autoconfigure.security.authentication.AuthenticationProperties;
 import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * Spring boot web security configuration.
@@ -49,24 +46,35 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  * @author Christian Bremer
  */
 @Configuration
-@EnableConfigurationProperties(WebSecurityProperties.class)
+@EnableConfigurationProperties({AuthenticationProperties.class, WebSecurityProperties.class})
 @EnableWebSecurity
 @Slf4j
 public class WebSecurityConfiguration {
 
   private final Environment env;
 
-  private final WebSecurityProperties properties;
+  private final AuthenticationProperties authenticationProperties;
+
+  private final WebSecurityProperties webSecurityProperties;
+
+  private final CorsConfigurationSource corsConfigurationSource;
 
   /**
    * Instantiates a new web security configuration.
    *
    * @param env the environment
-   * @param properties the security properties
+   * @param authenticationProperties the jbox authentication properties
+   * @param webSecurityProperties the security properties
    */
-  public WebSecurityConfiguration(Environment env, WebSecurityProperties properties) {
+  public WebSecurityConfiguration(
+      Environment env,
+      AuthenticationProperties authenticationProperties,
+      WebSecurityProperties webSecurityProperties,
+      CorsConfigurationSource corsConfigurationSource) {
     this.env = env;
-    this.properties = properties;
+    this.authenticationProperties = authenticationProperties;
+    this.webSecurityProperties = webSecurityProperties;
+    this.corsConfigurationSource = corsConfigurationSource;
   }
 
   /**
@@ -74,48 +82,50 @@ public class WebSecurityConfiguration {
    *
    * @param http the http security
    * @return the security filter chain
-   * @throws Exception if something goes wrong
    */
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
     String appName = env.getProperty("spring.application.name", "config-server");
+    String[] actuatorReadRoles = authenticationProperties.getActuator().getReadRoles()
+        .toArray(new String[0]);
+    String[] actuatorWriteRoles = authenticationProperties.getActuator().getWriteRoles()
+        .toArray(new String[0]);
     return http
-        .authorizeHttpRequests(requests -> requests
+        .authorizeHttpRequests(customizer -> customizer
+            .requestMatchers(HttpMethod.OPTIONS, "/**")
+            .permitAll()
+
             .requestMatchers(
                 EndpointRequest.to(InfoEndpoint.class),
                 EndpointRequest.to(HealthEndpoint.class))
             .permitAll()
+
+            .requestMatchers(new AndRequestMatcher(
+                EndpointRequest.toAnyEndpoint(),
+                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/**")))
+            .hasAnyAuthority(actuatorReadRoles)
+
             .requestMatchers(EndpointRequest.toAnyEndpoint())
-            .access(new WebExpressionAuthorizationManager(properties.buildActuatorAccess()))
-            .requestMatchers(new AntPathRequestMatcher("/**"))
-            .access(new WebExpressionAuthorizationManager(properties.buildApplicationAccess())))
+            .hasAnyAuthority(actuatorWriteRoles)
+
+            .anyRequest()
+            .hasAuthority(webSecurityProperties.getConfigServerAccessRole()))
+
         .csrf(AbstractHttpConfigurer::disable)
-        .httpBasic(configurer -> configurer.realmName(appName))
+
+        .cors(customizer -> customizer
+            .configurationSource(corsConfigurationSource))
+
+        .headers(configurer -> configurer
+            .frameOptions(FrameOptionsConfig::sameOrigin))
+
+        .sessionManagement(AbstractHttpConfigurer::disable)
+
+        .httpBasic(customizer -> customizer.realmName(appName))
+
+        .formLogin(AbstractHttpConfigurer::disable)
+
         .build();
-  }
-
-  /**
-   * Creates an in-memory user details service based on the users configured in
-   * {@link WebSecurityProperties}.
-   *
-   * @return the user details service for the basic authentication
-   */
-  @Profile({"in-memory"})
-  @Bean
-  public UserDetailsService userDetailsService() {
-
-    log.info("Building user details service with {}", properties);
-    final PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    final UserDetails[] userDetails = properties.buildUsers().stream().map(
-            simpleUser -> User.builder()
-                .username(simpleUser.getName())
-                .password(simpleUser.getPassword())
-                .authorities(
-                    simpleUser.getAuthorities().toArray(new String[0]))
-                .passwordEncoder(encoder::encode)
-                .build())
-        .toArray(UserDetails[]::new);
-    return new InMemoryUserDetailsManager(userDetails);
   }
 
 }

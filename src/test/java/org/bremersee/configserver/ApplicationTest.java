@@ -24,8 +24,9 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,32 +37,40 @@ import org.springframework.test.context.ActiveProfiles;
  * @author Christian Bremer
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-    "spring.autoconfigure.exclude="
-        + "org.springframework.boot.autoconfigure.ldap.embedded.EmbeddedLdapAutoConfiguration",
-    "bremersee.access.application-access='false'", // disable local access
-    "bremersee.access.admin-user-name=testadmin",
-    "bremersee.access.admin-user-password=pass4admin",
-    "bremersee.access.actuator-access='false'", // disable local access
-    "bremersee.access.actuator-user-name=testactuator",
-    "bremersee.access.actuator-user-password=pass4actuator"
+    "spring.autoconfigure.exclude=org.springframework.boot.ldap.autoconfigure.LdapAutoConfiguration"
 })
 @ActiveProfiles({"test", "in-memory"})
 @Slf4j
-public class ApplicationTest {
+class ApplicationTest {
 
-  private static final String user = "testadmin";
+  private static final String USER = "testadmin";
 
-  private static final String pass = "pass4admin";
+  private static final String PASS = "pass4admin";
 
-  private static final String actuatorUser = "testactuator";
+  private static final String ACTUATOR_USER = "testactuator";
 
-  private static final String actuatorPass = "pass4actuator";
+  private static final String ACTUATOR_PASS = "pass4actuator";
 
   /**
-   * The rest template.
+   * The rest template builder.
    */
   @Autowired
-  TestRestTemplate restTemplate;
+  RestTemplateBuilder restTemplateBuilder;
+
+  /**
+   * The local server port.
+   */
+  @LocalServerPort
+  int port;
+
+  /**
+   * Base url of the local server.
+   *
+   * @return the base url of the local server
+   */
+  String baseUrl() {
+    return "http://localhost:" + port;
+  }
 
   /**
    * Clean git base directory.
@@ -92,8 +101,10 @@ public class ApplicationTest {
     SoftAssertions softly = new SoftAssertions();
 
     String expected = "encrypt_me_i_am_a_secret";
-    ResponseEntity<String> response = restTemplate
-        .withBasicAuth(user, pass)
+    ResponseEntity<String> response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .basicAuthentication(USER, PASS)
+        .build()
         .postForEntity("/encrypt", expected, String.class);
     softly
         .assertThat(response.getStatusCode())
@@ -103,8 +114,10 @@ public class ApplicationTest {
         .isNotNull();
     String encrypted = response.getBody();
 
-    response = restTemplate
-        .withBasicAuth(user, pass)
+    response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .basicAuthentication(USER, PASS)
+        .build()
         .postForEntity("/decrypt", encrypted, String.class);
     softly
         .assertThat(response.getStatusCode())
@@ -124,7 +137,9 @@ public class ApplicationTest {
    */
   @Test
   void fetchHealth() {
-    ResponseEntity<String> response = restTemplate
+    ResponseEntity<String> response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .build()
         .getForEntity("/actuator/health", String.class);
     assertThat(response.getStatusCode())
         .isEqualTo(HttpStatus.OK);
@@ -135,31 +150,38 @@ public class ApplicationTest {
    */
   @Test
   void fetchInfo() {
-    ResponseEntity<String> response = restTemplate
+    ResponseEntity<String> response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .build()
         .getForEntity("/actuator/info", String.class);
     assertThat(response.getStatusCode())
         .isEqualTo(HttpStatus.OK);
   }
 
   /**
-   * Fetch metrics.
+   * Fetch beans.
    */
   @Test
-  void fetchMetrics() {
-    ResponseEntity<String> response = restTemplate
-        .withBasicAuth(actuatorUser, actuatorPass)
-        .getForEntity("/actuator/metrics", String.class);
+  void fetchBeans() {
+    ResponseEntity<String> response = restTemplateBuilder
+        .basicAuthentication(ACTUATOR_USER, ACTUATOR_PASS)
+        .baseUri(baseUrl())
+        .build()
+        .getForEntity("/actuator/beans", String.class);
     assertThat(response.getStatusCode())
         .isEqualTo(HttpStatus.OK);
   }
 
   /**
-   * Fetch metrics and expect unauthorized.
+   * Fetch beans and expect unauthorized.
    */
   @Test
-  void fetchMetricsAndExpectUnauthorized() {
-    ResponseEntity<String> response = restTemplate
-        .getForEntity("/actuator/metrics", String.class);
+  void fetchBeansAndExpectUnauthorized() {
+    ResponseEntity<String> response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .errorHandler(resp -> resp.getStatusCode().is5xxServerError())
+        .build()
+        .getForEntity("/actuator/beans", String.class);
     assertThat(response.getStatusCode())
         .isEqualTo(HttpStatus.UNAUTHORIZED);
   }
@@ -169,8 +191,10 @@ public class ApplicationTest {
    */
   @Test
   void fetchTestConfig() {
-    ResponseEntity<String> response = restTemplate
-        .withBasicAuth(user, pass)
+    ResponseEntity<String> response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .basicAuthentication(USER, PASS)
+        .build()
         .getForEntity("/test-config/default", String.class);
     assertThat(response.getBody())
         .contains("testkey", "testvalue");

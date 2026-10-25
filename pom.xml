@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.bremersee</groupId>
     <artifactId>common-service-parent</artifactId>
-    <version>3.0.1</version>
+    <version>6.1.2</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
@@ -25,16 +25,12 @@
 
     <start-class>org.bremersee.configserver.Application</start-class>
 
-    <spring-integration.version>0.0.1</spring-integration.version>
-
     <!--suppress UnresolvedMavenProperty -->
-    <!--
+    <debVersion>
+      ${project.version}-${maven.build.timestamp}+${buildNumber}
+    </debVersion>
     <debBaseName>
-      spring-config-server_${project.version}-${maven.build.timestamp}+${scmBranch}+${buildNumber}_all
-    </debBaseName>
-    -->
-    <debBaseName>
-      spring-config-server_${project.version}-${maven.build.timestamp}+${buildNumber}_all
+      spring-config-server_${debVersion}_all
     </debBaseName>
     <debName>${debBaseName}.deb</debName>
     <debChangesName>${debBaseName}.changes</debChangesName>
@@ -47,7 +43,7 @@
       <organization>bremersee.org</organization>
       <organizationUrl>https://bremersee.org</organizationUrl>
       <email>christian@bremersee.org</email>
-      <timezone>+1</timezone>
+      <timezone>Europe/Berlin</timezone>
       <roles>
         <role>Developer</role>
       </roles>
@@ -98,19 +94,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-config</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-config-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
@@ -118,23 +101,28 @@
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-restclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-config-server</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.bremersee</groupId>
       <artifactId>spring-integration-boot-autoconfigure</artifactId>
-      <version>${spring-integration.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bremersee</groupId>
       <artifactId>spring-integration-security-ldaptive</artifactId>
-      <version>${spring-integration.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-configuration-processor</artifactId>
-      <optional>true</optional>
-    </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -142,7 +130,22 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
+      <artifactId>spring-boot-starter-actuator-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-ldap</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-restclient-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -166,7 +169,6 @@
         <plugin>
           <artifactId>jdeb</artifactId>
           <groupId>org.vafer</groupId>
-          <version>1.5</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -185,9 +187,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
             <version>${spring-boot.version}</version>
-            <configuration>
-              <executable>true</executable>
-            </configuration>
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>

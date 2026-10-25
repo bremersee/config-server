@@ -2,7 +2,48 @@ spring:
   application:
     name: config-server
   profiles:
-    active: default,composite,in-memory
+    active: in-memory
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${GIT_URI:https://github.com/bremersee/config}
+          default-label: ${GIT_DEFAULT_LABEL:develop}
+          basedir: ${DATA_DIR:${java.io.tmpdir}}/git
+
+encrypt:
+  key-store:
+    location: ${ENCRYPTION_KEYSTORE_LOCATION:classpath:/encryption.jks}
+    type: ${ENCRYPTION_KEYSTORE_TYPE:jks}
+    password: ${ENCRYPTION_KEYSTORE_PASSWORD:changeit}
+    alias: ${ENCRYPTION_KEYSTORE_ALIAS:encryption}
+    secret: ${ENCRYPTION_KEYSTORE_SECRET:changeit}
+
+logging:
+  level:
+    org.springframework: INFO
+    org.bremersee: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      cors:
+        allowed-headers: "*"
+        allowed-methods: "*"
+        allowed-origins: "*"
+  endpoint:
+    health:
+      show-details: when_authorized
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: composite
 
   # Example of a composite configuration
   cloud:
@@ -18,44 +59,6 @@ spring:
             uri: https://github.com/${ORGANISATION:bremersee}/config
             basedir: ${DATA_DIR:${java.io.tmpdir}}/git/config
 
-encrypt:
-  key-store:
-    location: ${ENCRYPTION_KEYSTORE_LOCATION:classpath:/encryption.jks}
-    type: ${ENCRYPTION_KEYSTORE_TYPE:jks}
-    password: ${ENCRYPTION_KEYSTORE_PASSWORD:changeit}
-    alias: ${ENCRYPTION_KEYSTORE_ALIAS:encryption}
-    secret: ${ENCRYPTION_KEYSTORE_SECRET:changeit}
-
-logging:
-  level:
-    org.springframework: INFO
-    org.bremersee: INFO
-  file:
-    name: ${DATA_DIR:${java.io.tmpdir}}/log/config-server.log
-  logback:
-    rollingpolicy:
-      max-history: 25
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-      cors:
-        allowed-headers: "*"
-        allowed-methods: "*"
-        allowed-origins: "*"
-  endpoint:
-    health:
-      show-details: when_authorized
-    logfile:
-      external-file: ${DATA_DIR:${java.io.tmpdir}}/log/config-server-actuator.log
-
-bremersee:
-  access:
-    application-access: "false"
-    actuator-access: "false"
-
 ---
 
 spring:
@@ -64,13 +67,19 @@ spring:
       on-profile: in-memory
 
 bremersee:
-  access:
-    client-user-name: ${CLIENT_USER:user}
-    client-user-password: ${CLIENT_PASSWORD:changeit}
-    actuator-user-name: ${ACTUATOR_USER:actuator}
-    actuator-user-password: ${ACTUATOR_PASSWORD:changeit}
-    admin-user-name: ${ADMIN_USER:admin}
-    admin-user-password: ${ADMIN_PASSWORD:changeit}
+  authentication:
+    in-memory:
+      enabled: true
+      users:
+        - name: testadmin
+          password: pass4admin
+          authorities:
+            - ROLE_CONFIG_SERVER_ADMIN
+            - ROLE_ACTUATOR_ADMIN
+        - name: testactuator
+          password: pass4actuator
+          authorities:
+            - ROLE_ACTUATOR_ADMIN
 
 ---
 
@@ -82,22 +91,29 @@ spring:
 bremersee:
   ldaptive:
     ldap-url: ldaps://dc1.eixe.bremersee.org ldaps://dc2.eixe.bremersee.org
-    connection-validator:
-      search-request:
-        base-dn: cn=users,dc=eixe,dc=bremersee,dc=org
+    ldaptive-template-class: org.bremersee.ldaptive.LdaptiveSambaTemplate
+    immutable: true
+    use-start-tls: false
+    pooled: false
   authentication:
     ldaptive:
       template: active_directory
       user-base-dn: cn=users,dc=eixe,dc=bremersee,dc=org
+      user-find-one-search-scope: subtree
+      refused-usernames:
+        - "Administrator"
+      role-prefix: "ROLE_"
       role-case-transformation: to_upper_case
-      role-prefix: ROLE_
       role-string-replacements:
         - regex: "[- ]"
           replacement: "_"
         - regex: "_ADMINS"
           replacement: "_ADMIN"
-      default-roles:
-        - "ROLE_LOCAL_USER"
+      role-mapping:
+        - source: "Domain Admins"
+          target: "ROLE_ADMIN"
+        - source: "samba-admins"
+          target: "ROLE_ADMIN"
 
 ---
 
@@ -125,3 +141,75 @@ logging:
     org.springframework: INFO
     org.bremersee: DEBUG
 
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+  cloud:
+    config:
+      server:
+        git:
+          # this will be a local copy of the repo:
+          basedir: ${GIT_BASEDIR:/opt/basedir}
+          uri: ${GIT_URI:https://github.com/bremersee/config}
+          default-label: ${GIT_DEFAULT_LABEL:develop}
+          ignore-local-ssh-settings: ${GIT_IGNORE_LOCAL_SSH_SETTINGS:false}
+          private-key: ${GIT_PRIVATE_KEY:}
+          host-key: ${GIT_HOST_KEY:AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==}
+          host-key-algorithm: ${GIT_HOST_ALGORITHM:ssh-rsa}
+          # known-hosts-file: ${GIT_KNOWN_HOSTS_FILE:/etc/config-server/known_hosts}
+
+logging:
+  file:
+    name: ${LOG_PATH:/opt/log}/${spring.application.name:config-server}_${HOSTNAME:localhost}.log
+
+management:
+  endpoint:
+    health:
+      show-details: when_authorized
+    logfile:
+      external-file: ${logging.file.name}
+
+server:
+  tomcat:
+    accesslog:
+      enabled: ${ACCESS_LOG_ENABLED:true}
+      directory: ${LOG_PATH:/opt/log}
+      prefix: ${spring.application.name:config-server}_${HOSTNAME:unknown}_access_log
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: debian
+
+  cloud:
+    config:
+      server:
+        git:
+          basedir: /var/lib/config-server/basedir}
+
+logging:
+  level:
+    ROOT: info
+    org.bremersee: info
+  file:
+    name: /var/log/config-server/config-server.log
+  logback:
+    rollingpolicy:
+      max-history: 25
+
+server:
+  tomcat:
+    accesslog:
+      enabled: false
+      directory: /var/log/config-server
+      prefix: access_log
+
+management:
+  endpoint:
+    logfile:
+      external-file: /var/log/config-server/actuator.log
