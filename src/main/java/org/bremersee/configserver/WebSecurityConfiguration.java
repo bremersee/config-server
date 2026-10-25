@@ -60,6 +60,7 @@ public class WebSecurityConfiguration {
    * @param env the environment
    * @param authenticationProperties the jbox authentication properties
    * @param webSecurityProperties the security properties
+   * @param corsConfigurationSource the cors configuration source
    */
   public WebSecurityConfiguration(
       Environment env,

@@ -17,7 +17,6 @@
 package org.bremersee.configserver;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -28,7 +27,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "bremersee.config-server.authentication")
 @Data
-@NoArgsConstructor
 @Slf4j
 public class WebSecurityProperties {
 
@@ -37,6 +35,15 @@ public class WebSecurityProperties {
    */
   public static final String ROLE_APPLICATION = "ROLE_CONFIG_SERVER_ADMIN";
 
+  /**
+   * The required role to access the config server.
+   */
   private String configServerAccessRole = ROLE_APPLICATION;
 
+  /**
+   * Instantiates new web security properties.
+   */
+  public WebSecurityProperties() {
+    super();
+  }
 }
