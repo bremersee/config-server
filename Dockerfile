@@ -28,7 +28,7 @@ WORKDIR /app
 ENTRYPOINT [ \
   "java", \
   "-Djava.security.egd=file:/dev/./urandom", \
-  "-Dspring.config.location=${DATA_DIR}/etc/application.yml", \
+  "-Dspring.config.location=/data/etc/application.yml", \
   "-Dspring.profiles.active=${ACTIVE_PROFILES}", \
   "-jar", \
   "app.jar" \
