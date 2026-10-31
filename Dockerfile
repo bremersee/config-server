@@ -18,9 +18,9 @@ ENV ACTUATOR_USER_PASSWORD=changeit
 ENV ACTUATOR_ADMIN_NAME=admin
 ENV ACTUATOR_ADMIN_PASSWORD=changeit
 
-RUN mkdir -p /app $DATA_DIR/etc $DATA_DIR/git $DATA_DIR/log
+RUN mkdir -p /app ${DATA_DIR}/etc ${DATA_DIR}/git ${DATA_DIR}/log
 
-COPY src/main/resources/application.yml $DATA_DIR/etc/application.yml
+COPY src/main/resources/application.yml ${DATA_DIR}/etc/application.yml
 COPY target/config-server.jar /app/app.jar
 
 WORKDIR /app
@@ -28,8 +28,8 @@ WORKDIR /app
 ENTRYPOINT [ \
   "java", \
   "-Djava.security.egd=file:/dev/./urandom", \
-  "-Dspring.config.location=$DATA_DIR/etc/application.yml", \
-  "-Dspring.profiles.active=$ACTIVE_PROFILES", \
+  "-Dspring.config.location=${DATA_DIR}/etc/application.yml", \
+  "-Dspring.profiles.active=${ACTIVE_PROFILES}", \
   "-jar", \
   "app.jar" \
 ]

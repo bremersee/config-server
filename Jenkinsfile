@@ -8,7 +8,7 @@ pipeline {
     DOCKER_IMAGE = 'bremersee/config-server'
     DOCKER_HOSTS = 'app1 app2'
     DOCKER_PUSH=true
-    DEPLOY_ON_APP_SERVER=true
+    DEPLOY_ON_APP_SERVER=false
     SNAPSHOT_SITE = false
     RELEASE_SITE = false
     DEPLOY_SNAPSHOT_ON_DATA = false
@@ -68,7 +68,7 @@ pipeline {
             MVN_VERSION=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
             TAG=\$MVN_VERSION
             LATEST="latest"
-            if [[ \$MVN_VERSION == *"-SNAPSHOT" ]]; then
+            if [[ \$MVN_VERSION == *"-SNAPSHOT"* ]]; then
               TAG=\$MVN_VERSION-${BUILD_NUMBER}
               LATEST="snapshot"
             fi
@@ -142,7 +142,6 @@ pipeline {
                 --interactive \
                 --name=$NAME \
                 --restart=unless-stopped \
-                -v config_server_data:/data \
                 -e ACTIVE_PROFILES='docker,ldap' \
                 -e ENCRYPTION_KEY='$ENCRYPTION_KEY' \
                 -p 10100:8080 \
