@@ -8,7 +8,7 @@ pipeline {
     DOCKER_IMAGE = 'bremersee/config-server'
     DOCKER_HOSTS = 'app1 app2'
     DOCKER_PUSH=true
-    DEPLOY_ON_APP_SERVER=false
+    DEPLOY_ON_APP_SERVER=true
     SNAPSHOT_SITE = false
     RELEASE_SITE = false
     DEPLOY_SNAPSHOT_ON_DATA = false
@@ -68,10 +68,6 @@ pipeline {
             MVN_VERSION=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
             TAG=\$MVN_VERSION
             LATEST="latest"
-            if [[ \$MVN_VERSION == *"-SNAPSHOT"* ]]; then
-              TAG=\$MVN_VERSION-${BUILD_NUMBER}
-              LATEST="snapshot"
-            fi
             echo "Building and pushing docker image $DOCKER_IMAGE:\$TAG"
             mvn -B -P build-system -DskipTests clean package
             docker context use default
@@ -112,10 +108,6 @@ pipeline {
             MVN_VERSION=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
             TAG=\$MVN_VERSION
             LATEST="latest"
-            if [[ \$MVN_VERSION == *"-SNAPSHOT" ]]; then
-              TAG=\$MVN_VERSION-${BUILD_NUMBER}
-              LATEST="snapshot"
-            fi
             for DOCKER_HOST in $DOCKER_HOSTS; do
               CONTAINER_ID=\$(docker \
                 -H ssh://root@\$DOCKER_HOST \
