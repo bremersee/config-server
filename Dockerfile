@@ -1,4 +1,4 @@
-MAINTAINER Christian Bremer <christian@bremersee.org>
+LABEL org.opencontainers.image.authors="christian@bremersee.org"
 FROM eclipse-temurin:25-jre-noble
 
 EXPOSE 8080
