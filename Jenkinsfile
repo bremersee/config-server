@@ -80,7 +80,7 @@ pipeline {
               buildx \
               build \
               -t $DOCKER_IMAGE:\$TAG \
-              -t $DOCKER_IMAGE:\$LATEST
+              -t $DOCKER_IMAGE:\$LATEST \
               -f Dockerfile \
               --platform=linux/amd64,linux/arm64 \
               .
