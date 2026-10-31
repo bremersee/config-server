@@ -8,7 +8,7 @@ ENV ACTIVE_PROFILES=docker,in-memory
 
 ENV GIT_URI=https://github.com/bremersee/config
 ENV GIT_DEFAULT_LABEL=develop
-ENV DATA_DIR:/data
+ENV DATA_DIR=/data
 ENV ENCRYPTION_KEY=changeit
 
 ENV CONFIG_USER_NAME=config
