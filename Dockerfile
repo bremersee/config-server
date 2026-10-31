@@ -1,5 +1,5 @@
-LABEL org.opencontainers.image.authors="christian@bremersee.org"
 FROM eclipse-temurin:25-jre-noble
+LABEL org.opencontainers.image.authors="christian@bremersee.org"
 
 EXPOSE 8080
 VOLUME /data
