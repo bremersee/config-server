@@ -82,12 +82,10 @@ pipeline {
               -t $DOCKER_IMAGE:\$TAG \
               -t $DOCKER_IMAGE:\$LATEST \
               -f Dockerfile \
+              -- builder xbuilder \
               --platform=linux/amd64,linux/arm64 \
+              --push \
               .
-            docker \
-              push \
-              $DOCKER_IMAGE \
-              --all-tags
             docker image prune -a -f
           '''
         }
