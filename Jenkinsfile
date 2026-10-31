@@ -8,7 +8,7 @@ pipeline {
     DOCKER_IMAGE = 'bremersee/config-server'
     DOCKER_HOSTS = 'app1 app2'
     DOCKER_PUSH=true
-    DEPLOY_ON_APP_SERVER=false
+    DEPLOY_ON_APP_SERVER=true
     SNAPSHOT_SITE = false
     RELEASE_SITE = false
     DEPLOY_SNAPSHOT_ON_DATA = false
@@ -125,6 +125,7 @@ pipeline {
                   rm \$CONTAINER_ID
                 sleep 10
               fi
+              docker -H ssh://root@\$DOCKER_HOST pull $DOCKER_IMAGE:\$TAG
               docker \
                 -H ssh://root@\$DOCKER_HOST \
                 run \
