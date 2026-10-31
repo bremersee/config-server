@@ -7,7 +7,7 @@ pipeline {
     NAME='config-server'
     DOCKER_IMAGE = 'bremersee/config-server'
     DOCKER_HOSTS = 'app1 app2'
-    DOCKER_PUSH=true
+    DOCKER_PUSH=false
     DEPLOY_ON_APP_SERVER=true
     SNAPSHOT_SITE = false
     RELEASE_SITE = false
@@ -90,7 +90,6 @@ pipeline {
     stage('Deploy On App Server') {
       when {
         allOf {
-          environment name: 'DOCKER_PUSH', value: 'true'
           environment name: 'DEPLOY_ON_APP_SERVER', value: 'true'
           anyOf {
             branch 'develop'
