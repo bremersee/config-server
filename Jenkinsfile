@@ -76,13 +76,13 @@ pipeline {
             mvn -B -P build-system -DskipTests clean package
             docker context use default
             docker login -u $DOCKER_USER -p $DOCKER_SECRET
+            docker run --privileged --rm tonistiigi/binfmt --install all
             docker \
               buildx \
               build \
               -t $DOCKER_IMAGE:\$TAG \
               -t $DOCKER_IMAGE:\$LATEST \
               -f Dockerfile \
-              --builder xbuilder \
               --platform=linux/amd64,linux/arm64 \
               --push \
               .
