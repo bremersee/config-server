@@ -25,6 +25,8 @@
 
     <start-class>org.bremersee.configserver.Application</start-class>
 
+    <java.version>25</java.version>
+
     <!--suppress UnresolvedMavenProperty -->
     <debVersion>
       ${project.version}-${maven.build.timestamp}+${buildNumber}

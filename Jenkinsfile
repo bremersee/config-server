@@ -1,9 +1,14 @@
 pipeline {
   agent {
-    label 'jdk21 && maven && docker'
+    label 'jdk25 && maven && docker'
   }
   environment {
     CODECOV_TOKEN = credentials('config-server-codecov-token')
+    NAME='config-server'
+    DOCKER_IMAGE = 'bremersee/config-server'
+    DOCKER_HOSTS = 'app1 app2'
+    DOCKER_PUSH=true
+    DEPLOY_ON_APP_SERVER=true
     SNAPSHOT_SITE = false
     RELEASE_SITE = false
     DEPLOY_SNAPSHOT_ON_DATA = false
@@ -14,7 +19,7 @@ pipeline {
     CLEAN = true
   }
   tools {
-    jdk 'jdk21'
+    jdk 'jdk25'
     maven 'm3'
   }
   options {
@@ -22,10 +27,6 @@ pipeline {
   }
   stages {
     stage('Tools') {
-      tools {
-        jdk 'jdk21'
-        maven 'm3'
-      }
       steps {
         sh 'java -version'
         sh 'mvn -B --version'
@@ -42,6 +43,118 @@ pipeline {
               tools: [[parser: 'JACOCO', pattern: '**/coverage-reports/*.exec']],
               sourceCodeRetention: 'LAST_BUILD'
           )
+        }
+      }
+    }
+    stage('Docker Push') {
+      when {
+        allOf {
+          environment name: 'DOCKER_PUSH', value: 'true'
+          anyOf {
+            branch 'develop'
+            branch 'main'
+          }
+        }
+      }
+      steps {
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'dockerhub',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_SECRET')
+        ]) {
+          sh '''
+            #!/bin/bash
+            MVN_VERSION=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            TAG=\$MVN_VERSION
+            LATEST="latest"
+            if [[ \$MVN_VERSION == *"-SNAPSHOT" ]]; then
+              TAG=\$MVN_VERSION-${BUILD_NUMBER}
+              LATEST="snapshot"
+            fi
+            echo "Building and pushing docker image $DOCKER_IMAGE:\$TAG"
+            mvn -B -P build-system -DskipTests clean package
+            docker context use default
+            docker login -u $DOCKER_USER -p $DOCKER_SECRET
+            docker \
+              buildx \
+              build \
+              -t $DOCKER_IMAGE:\$TAG \
+              -t $DOCKER_IMAGE:\$LATEST
+              -f Dockerfile \
+              --platform=linux/amd64,linux/arm64 \
+              .
+            docker \
+              push \
+              $DOCKER_IMAGE \
+              --all-tags
+            docker image prune -a -f
+          '''
+        }
+      }
+    }
+    stage('Deploy On App Server') {
+      when {
+        allOf {
+          environment name: 'DOCKER_PUSH', value: 'true'
+          environment name: 'DEPLOY_ON_APP_SERVER', value: 'true'
+          anyOf {
+            branch 'develop'
+            branch 'main'
+          }
+        }
+      }
+      steps {
+        withCredentials([
+          string(credentialsId: 'config-server-key', variable: 'ENCRYPTION_KEY')
+        ]) {
+          sh '''
+            #!/bin/bash
+            sleep 10
+            MVN_VERSION=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            TAG=\$MVN_VERSION
+            LATEST="latest"
+            if [[ \$MVN_VERSION == *"-SNAPSHOT" ]]; then
+              TAG=\$MVN_VERSION-${BUILD_NUMBER}
+              LATEST="snapshot"
+            fi
+            for DOCKER_HOST in $DOCKER_HOSTS; do
+              CONTAINER_ID=\$(docker \
+                -H ssh://root@\$DOCKER_HOST \
+                ps -aqf "name=^$NAME")
+              echo "Container id is \$CONTAINER_ID"
+              if [ -z "\$CONTAINER_ID" ]; then
+                echo "No $NAME container is running."
+              else
+                echo "Stopping $NAME container with ID \$CONTAINER_ID."
+                docker \
+                  -H ssh://root@\$DOCKER_HOST \
+                  stop \$CONTAINER_ID
+                sleep 10
+                docker \
+                  -H ssh://root@\$DOCKER_HOST \
+                  rm \$CONTAINER_ID
+                sleep 10
+              fi
+              docker \
+                -H ssh://root@\$DOCKER_HOST \
+                run \
+                --detach \
+                --tty \
+                --interactive \
+                --name=$NAME \
+                --restart=unless-stopped \
+                -v config_server_data:/data \
+                -e ACTIVE_PROFILES='docker,ldap' \
+                -e ENCRYPTION_KEY='$ENCRYPTION_KEY' \
+                -p 10100:8080 \
+                $DOCKER_IMAGE:\$TAG
+              sleep 10
+              docker \
+                -H ssh://root@\$DOCKER_HOST \
+                image prune -a -f
+            done
+          '''
         }
       }
     }
@@ -78,7 +191,7 @@ pipeline {
             #!/bin/bash
             cp $KS target/keystore.jks
             IMAGE=bremersee/config-server-configured-arm64
-            TAG=snapshot-${BUILD_NUMBER}
+            TAG=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)-${BUILD_NUMBER}
             docker \
               -H $DOCKER_HOST \
               --tlsverify \
@@ -176,7 +289,7 @@ pipeline {
             #!/bin/bash
             cp $KS target/keystore.jks
             IMAGE=bremersee/config-server-configured-arm64
-            TAG=release-${BUILD_NUMBER}
+            TAG=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
             docker \
               -H $DOCKER_HOST \
               --tlsverify \

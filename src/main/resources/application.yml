@@ -13,17 +13,13 @@ spring:
           basedir: ${DATA_DIR:${java.io.tmpdir}}/git
 
 encrypt:
-  key-store:
-    location: ${ENCRYPTION_KEYSTORE_LOCATION:classpath:/encryption.jks}
-    type: ${ENCRYPTION_KEYSTORE_TYPE:jks}
-    password: ${ENCRYPTION_KEYSTORE_PASSWORD:changeit}
-    alias: ${ENCRYPTION_KEYSTORE_ALIAS:encryption}
-    secret: ${ENCRYPTION_KEYSTORE_SECRET:changeit}
+  key: ${ENCRYPT_KEY:changeit}
 
 logging:
   level:
-    org.springframework: INFO
-    org.bremersee: DEBUG
+    ROOT: info
+    org.springframework: info
+    org.bremersee: info
 
 management:
   endpoints:
@@ -43,27 +39,6 @@ management:
 spring:
   config:
     activate:
-      on-profile: composite
-
-  # Example of a composite configuration
-  cloud:
-    config:
-      server:
-        fail-on-composite-error: false
-        default-label: develop
-        composite:
-          - type: git
-            uri: https://github.com/${ORGANISATION:bremersee}/{application}
-            basedir: ${DATA_DIR:${java.io.tmpdir}}/git
-          - type: git
-            uri: https://github.com/${ORGANISATION:bremersee}/config
-            basedir: ${DATA_DIR:${java.io.tmpdir}}/git/config
-
----
-
-spring:
-  config:
-    activate:
       on-profile: in-memory
 
 bremersee:
@@ -71,13 +46,17 @@ bremersee:
     in-memory:
       enabled: true
       users:
-        - name: testadmin
-          password: pass4admin
+        - name: ${CONFIG_USER_NAME:testadmin}
+          password: ${CONFIG_USER_PASSWORD:pass4admin}
           authorities:
             - ROLE_CONFIG_SERVER_ADMIN
             - ROLE_ACTUATOR_ADMIN
-        - name: testactuator
-          password: pass4actuator
+        - name: ${ACTUATOR_USER_NAME:testactuator}
+          password: ${ACTUATOR_USER_PASSWORD:pass4actuator}
+          authorities:
+            - ROLE_ACTUATOR
+        - name: ${ACTUATOR_ADMIN_NAME:testactuatoradmin}
+          password: ${ACTUATOR_ADMIN_PASSWORD:pass4actuatoradmin}
           authorities:
             - ROLE_ACTUATOR_ADMIN
 
@@ -138,8 +117,8 @@ encrypt:
 
 logging:
   level:
-    org.springframework: INFO
-    org.bremersee: DEBUG
+    org.springframework: info
+    org.bremersee: debug
 
 ---
 
@@ -151,10 +130,6 @@ spring:
     config:
       server:
         git:
-          # this will be a local copy of the repo:
-          basedir: ${GIT_BASEDIR:/opt/basedir}
-          uri: ${GIT_URI:https://github.com/bremersee/config}
-          default-label: ${GIT_DEFAULT_LABEL:develop}
           ignore-local-ssh-settings: ${GIT_IGNORE_LOCAL_SSH_SETTINGS:false}
           private-key: ${GIT_PRIVATE_KEY:}
           host-key: ${GIT_HOST_KEY:AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==}
@@ -163,21 +138,24 @@ spring:
 
 logging:
   file:
-    name: ${LOG_PATH:/opt/log}/${spring.application.name:config-server}_${HOSTNAME:localhost}.log
+    name: ${DATA_DIR:${java.io.tmpdir}}/log/${spring.application.name}_${HOSTNAME:localhost}.log
+  logback:
+    rollingpolicy:
+      max-history: 25
 
 management:
   endpoint:
     health:
       show-details: when_authorized
     logfile:
-      external-file: ${logging.file.name}
+      external-file: ${DATA_DIR:${java.io.tmpdir}}/log/${spring.application.name}_${HOSTNAME:localhost}_actuator.log
 
 server:
   tomcat:
     accesslog:
-      enabled: ${ACCESS_LOG_ENABLED:true}
-      directory: ${LOG_PATH:/opt/log}
-      prefix: ${spring.application.name:config-server}_${HOSTNAME:unknown}_access_log
+      enabled: ${ACCESS_LOG_ENABLED:false}
+      directory: ${${DATA_DIR:${java.io.tmpdir}}/log
+      prefix: ${spring.application.name}_${HOSTNAME:localhost}_access_log
 
 ---
 
@@ -190,7 +168,7 @@ spring:
     config:
       server:
         git:
-          basedir: /var/lib/config-server/basedir}
+          basedir: /var/lib/config-server/basedir
 
 logging:
   level:

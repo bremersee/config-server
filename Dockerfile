@@ -1,33 +1,35 @@
-FROM eclipse-temurin:21-jre-jammy
-MAINTAINER Christian Bremer <bremersee@googlemail.com>
+MAINTAINER Christian Bremer <christian@bremersee.org>
+FROM eclipse-temurin:25-jre-noble
 
 EXPOSE 8080
 VOLUME /data
 
-ENV DATA_DIR=/data
+ENV ACTIVE_PROFILES=docker,in-memory
 
-ENV ENCRYPTION_KEYSTORE_LOCATION=classpath:/encryption.jks
-ENV ENCRYPTION_KEYSTORE_TYPE=jks
-ENV ENCRYPTION_KEYSTORE_PASSWORD=changeit
-ENV ENCRYPTION_KEYSTORE_ALIAS=encryption
-ENV ENCRYPTION_KEYSTORE_SECRET=changeit
+ENV GIT_URI=https://github.com/bremersee/config
+ENV GIT_DEFAULT_LABEL=develop
+ENV DATA_DIR:/data
+ENV ENCRYPTION_KEY=changeit
 
-ENV CLIENT_USER=user
-ENV CLIENT_PASSWORD=changeit
-ENV ACTUATOR_USER=actuator
-ENV ACTUATOR_PASSWORD=changeit
-ENV ADMIN_USER=admin
-ENV ADMIN_PASSWORD=changeit
+ENV CONFIG_USER_NAME=config
+ENV CONFIG_USER_PASSWORD=changeit
+ENV ACTUATOR_USER_NAME=actuator
+ENV ACTUATOR_USER_PASSWORD=changeit
+ENV ACTUATOR_ADMIN_NAME=admin
+ENV ACTUATOR_ADMIN_PASSWORD=changeit
 
-RUN mkdir /data
-RUN mkdir /data/etc
-RUN mkdir /data/log
+RUN mkdir -p /app $DATA_DIR/etc $DATA_DIR/git $DATA_DIR/log
 
-ADD src/main/resources/application.yml /data/etc/application.yml
-
-RUN mkdir /app
-ADD target/config-server.jar /app/app.jar
+COPY src/main/resources/application.yml $DATA_DIR/etc/application.yml
+COPY target/config-server.jar /app/app.jar
 
 WORKDIR /app
 
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.config.location=/data/etc/application.yml", "-jar", "app.jar"]
+ENTRYPOINT [ \
+  "java", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-Dspring.config.location=$DATA_DIR/etc/application.yml", \
+  "-Dspring.profiles.active=$ACTIVE_PROFILES", \
+  "-jar", \
+  "app.jar" \
+]
