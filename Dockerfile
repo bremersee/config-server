@@ -20,7 +20,6 @@ ENV ADMIN_PASSWORD=changeit
 
 RUN mkdir -p /app /data/git /data/log
 
-COPY src/main/resources/application.yml /data/etc/application.yml
 COPY target/config-server.jar /app/app.jar
 
 WORKDIR /app

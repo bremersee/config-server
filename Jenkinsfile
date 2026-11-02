@@ -9,8 +9,8 @@ pipeline {
     DOCKER_HOSTS = 'app1 app2'
     DOCKER_PUSH=false
     DEPLOY_ON_APP_SERVER=false
-    SITE = true
-    DEPLOY_TO_DEBIAN_REPO = true
+    SITE = false
+    DEPLOY_TO_DEBIAN_REPO = false
     CLEAN = true
   }
   tools {
