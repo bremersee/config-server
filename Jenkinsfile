@@ -7,10 +7,10 @@ pipeline {
     NAME='config-server'
     DOCKER_IMAGE = 'bremersee/config-server'
     DOCKER_HOSTS = 'app1 app2'
-    DOCKER_PUSH=false
-    DEPLOY_ON_APP_SERVER=false
-    SITE = false
-    DEPLOY_TO_DEBIAN_REPO = false
+    DOCKER_PUSH=true
+    DEPLOY_ON_APP_SERVER=true
+    SITE = true
+    DEPLOY_TO_DEBIAN_REPO = true
     CLEAN = true
   }
   tools {
@@ -158,7 +158,7 @@ pipeline {
                 --interactive \
                 --name=$NAME \
                 --restart=unless-stopped \
-                -e ACTIVE_PROFILES='docker,ldap' \
+                -e ACTIVE_PROFILES='docker,simple-ldap' \
                 -e ENCRYPTION_KEY='$ENCRYPTION_KEY' \
                 -p 10100:8080 \
                 $DOCKER_IMAGE:\$TAG
