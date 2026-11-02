@@ -167,4 +167,4 @@ The answer will be:
 
 ## Maven Site
 
-[Maven-Site](https://bremersee.github.io/config-server/2.1.0-SNAPSHOT/index.html)
+[Maven-Site](https://bremersee.github.io/config-server/2.1.0/index.html)
