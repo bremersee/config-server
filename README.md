@@ -1,6 +1,6 @@
 # Bremersee's Spring Cloud Config Server
 
-[![codecov](https://codecov.io/gh/bremersee/config-server/branch/main/graph/badge.svg)](https://codecov.io/gh/bremersee/config-server)
+[![codecov](https://codecov.io/gh/bremersee/config-server/branch/develop/graph/badge.svg)](https://codecov.io/gh/bremersee/config-server)
 
 This config server is more or less a plain Spring Cloud Config Server:
 
@@ -167,4 +167,4 @@ The answer will be:
 
 ## Maven Site
 
-[Maven-Site](https://bremersee.github.io/config-server/2.1.0/index.html)
+[Maven-Site](https://bremersee.github.io/config-server/2.2.0-SNAPSHOT/index.html)
