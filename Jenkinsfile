@@ -9,8 +9,7 @@ pipeline {
     DOCKER_HOSTS = 'app1 app2'
     DOCKER_PUSH=true
     DEPLOY_ON_APP_SERVER=true
-    SNAPSHOT_SITE = false
-    RELEASE_SITE = false
+    SITE = true
     DEPLOY_SNAPSHOT_ON_DATA = false
     DEPLOY_RELEASE_ON_DATA = false
     DEPLOY_SNAPSHOT_ON_SERVER = false
@@ -43,6 +42,35 @@ pipeline {
               tools: [[parser: 'JACOCO', pattern: '**/coverage-reports/*.exec']],
               sourceCodeRetention: 'LAST_BUILD'
           )
+        }
+      }
+    }
+    stage('Site') {
+      when {
+        allOf {
+          environment name: 'SITE', value: 'true'
+          anyOf {
+            branch 'develop'
+            branch 'main'
+            branch 'feature/*'
+            branch 'bugfix/*'
+          }
+        }
+      }
+      steps {
+        sh '''
+          mvn -B -P build-system,gh-pages-site site site:stage
+          git clone -b gh-pages git@github.com:bremersee/$NAME.git target/gh-pages
+          cp -rf target/staging/* target/gh-pages
+          git -C target/gh-pages add .
+          git -C target/gh-pages commit -m "Maven site"
+          git -C target/gh-pages push
+          rm -rf target/gh-pages
+        '''
+      }
+      post {
+        always {
+          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
         }
       }
     }
@@ -383,41 +411,6 @@ pipeline {
       }
       steps {
         sh 'mvn -B -DskipTests=true -Dhttp.protocol.expect-continue=true -Pdebian11,deploy-to-repo-debian-bullseye clean deploy'
-      }
-    }
-    stage('Deploy snapshot site') {
-      when {
-        allOf {
-          environment name: 'SNAPSHOT_SITE', value: 'true'
-          anyOf {
-            branch 'develop'
-            branch 'feature/*'
-          }
-        }
-      }
-      steps {
-        sh 'mvn -B clean site-deploy'
-      }
-      post {
-        always {
-          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
-        }
-      }
-    }
-    stage('Deploy release site') {
-      when {
-        allOf {
-          branch 'main'
-          environment name: 'RELEASE_SITE', value: 'true'
-        }
-      }
-      steps {
-        sh 'mvn -B -P gh-pages-site clean site site:stage scm-publish:publish-scm'
-      }
-      post {
-        always {
-          sh 'curl -s https://codecov.io/bash | bash -s - -t ${CODECOV_TOKEN}'
-        }
       }
     }
     stage('Clean') {

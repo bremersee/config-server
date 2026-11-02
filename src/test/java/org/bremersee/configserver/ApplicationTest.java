@@ -43,13 +43,13 @@ import org.springframework.test.context.ActiveProfiles;
 @Slf4j
 class ApplicationTest {
 
-  private static final String USER = "testadmin";
+  private static final String USER = "config";
 
-  private static final String PASS = "pass4admin";
+  private static final String PASS = "changeit";
 
-  private static final String ACTUATOR_USER = "testactuator";
+  private static final String ACTUATOR_USER = "actuator";
 
-  private static final String ACTUATOR_PASS = "pass4actuator";
+  private static final String ACTUATOR_PASS = "changeit";
 
   /**
    * The rest template builder.

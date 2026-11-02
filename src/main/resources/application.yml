@@ -46,18 +46,18 @@ bremersee:
     in-memory:
       enabled: true
       users:
-        - name: ${CONFIG_USER_NAME:testadmin}
-          password: ${CONFIG_USER_PASSWORD:pass4admin}
+        - name: ${CONFIG_USER_NAME:config}
+          password: ${CONFIG_USER_PASSWORD:changeit}
           authorities:
             - ROLE_CONFIG_SERVER_ADMIN
-            - ROLE_ACTUATOR_ADMIN
-        - name: ${ACTUATOR_USER_NAME:testactuator}
-          password: ${ACTUATOR_USER_PASSWORD:pass4actuator}
+        - name: ${ACTUATOR_USER_NAME:actuator}
+          password: ${ACTUATOR_USER_PASSWORD:changeit}
           authorities:
             - ROLE_ACTUATOR
-        - name: ${ACTUATOR_ADMIN_NAME:testactuatoradmin}
-          password: ${ACTUATOR_ADMIN_PASSWORD:pass4actuatoradmin}
+        - name: ${ADMIN_NAME:admin}
+          password: ${ADMIN_PASSWORD:changeit}
           authorities:
+            - ROLE_CONFIG_SERVER_ADMIN
             - ROLE_ACTUATOR_ADMIN
 
 ---
@@ -130,6 +130,7 @@ spring:
     config:
       server:
         git:
+          basedir: /data/git
           ignore-local-ssh-settings: ${GIT_IGNORE_LOCAL_SSH_SETTINGS:false}
           private-key: ${GIT_PRIVATE_KEY:}
           host-key: ${GIT_HOST_KEY:AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==}
@@ -138,7 +139,7 @@ spring:
 
 logging:
   file:
-    name: ${DATA_DIR:${java.io.tmpdir}}/log/${spring.application.name}_${HOSTNAME:localhost}.log
+    name: /data/log/${spring.application.name}.log
   logback:
     rollingpolicy:
       max-history: 25
@@ -148,14 +149,14 @@ management:
     health:
       show-details: when_authorized
     logfile:
-      external-file: ${DATA_DIR:${java.io.tmpdir}}/log/${spring.application.name}_${HOSTNAME:localhost}_actuator.log
+      external-file: /data/log/${spring.application.name}_actuator.log
 
 server:
   tomcat:
     accesslog:
       enabled: ${ACCESS_LOG_ENABLED:false}
-      directory: ${${DATA_DIR:${java.io.tmpdir}}/log
-      prefix: ${spring.application.name}_${HOSTNAME:localhost}_access_log
+      directory: /data/log
+      prefix: ${spring.application.name}_access_log
 
 ---
 
