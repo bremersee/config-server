@@ -1,0 +1,12 @@
+[Unit]
+Description=Spring Boot Config Server
+After=syslog.target
+
+[Service]
+User=cfg-srv
+WorkingDirectory=/var/lib/config-server
+ExecStart=/var/lib/config-server/config-server.jar
+SuccessExitStatus=1 4 3
+
+[Install]
+WantedBy=multi-user.target

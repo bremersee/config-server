@@ -7,14 +7,10 @@ pipeline {
     NAME='config-server'
     DOCKER_IMAGE = 'bremersee/config-server'
     DOCKER_HOSTS = 'app1 app2'
-    DOCKER_PUSH=true
-    DEPLOY_ON_APP_SERVER=true
+    DOCKER_PUSH=false
+    DEPLOY_ON_APP_SERVER=false
     SITE = true
-    DEPLOY_SNAPSHOT_ON_DATA = false
-    DEPLOY_RELEASE_ON_DATA = false
-    DEPLOY_SNAPSHOT_ON_SERVER = false
-    DEPLOY_RELEASE_ON_SERVER = false
-    DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE = false
+    DEPLOY_TO_DEBIAN_REPO = true
     CLEAN = true
   }
   tools {
@@ -175,242 +171,20 @@ pipeline {
         }
       }
     }
-    stage('Deploy Snapshot On Data') {
+    stage('Deploy to Debian Repo') {
       when {
         allOf {
-          environment name: 'DEPLOY_SNAPSHOT_ON_DATA', value: 'true'
+          environment name: 'DEPLOY_TO_DEBIAN_REPO', value: 'true'
           anyOf {
             branch 'develop'
-            branch 'feature/*'
+            branch 'main'
           }
         }
       }
       steps {
-        withCredentials([
-          string(credentialsId: 'data-docker-host', variable: 'DOCKER_HOST'),
-          file(credentialsId: 'data-docker-ca', variable: 'DOCKER_CA'),
-          file(credentialsId: 'data-docker-cert', variable: 'DOCKER_CERT'),
-          file(credentialsId: 'data-docker-key', variable: 'DOCKER_KEY'),
-          file(credentialsId: 'config-server-keystore', variable: 'KS'),
-          string(credentialsId: 'config-server-keystore-password', variable: 'KS_PASSWORD'),
-          usernamePassword(credentialsId: 'config-server-keystore-entry', usernameVariable: 'ALIAS', passwordVariable: 'SECRET'),
-          // usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'CLIENT', passwordVariable: 'CLIENT_PASSWORD'),
-          // usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'ACTUATOR', passwordVariable: 'ACTUATOR_PASSWORD'),
-          // usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
-        ]) {
-//              --build-arg clientUser=$CLIENT \
-//              --build-arg clientPassword=$CLIENT_PASSWORD \
-//              --build-arg actuatorUser=$ACTUATOR \
-//              --build-arg actuatorPassword=$ACTUATOR_PASSWORD \
-//              --build-arg adminUser=$ADMIN \
-//              --build-arg adminPassword=$ADMIN_PASSWORD \
-          sh '''
-            #!/bin/bash
-            cp $KS target/keystore.jks
-            IMAGE=bremersee/config-server-configured-arm64
-            TAG=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)-${BUILD_NUMBER}
-            docker \
-              -H $DOCKER_HOST \
-              --tlsverify \
-              --tlscert=$DOCKER_CERT \
-              --tlskey=$DOCKER_KEY \
-              --tlscacert=$DOCKER_CA \
-              build \
-              -t \$IMAGE:\$TAG \
-              -f DockerfileConfiguredArm64 \
-              --build-arg platform=arm64 \
-              --build-arg keystore=target/keystore.jks \
-              --build-arg keystoreType=jks \
-              --build-arg keystorePassword=$KS_PASSWORD \
-              --build-arg keystoreAlias=$ALIAS \
-              --build-arg keystoreSecret=$SECRET \
-              .
-              rm target/keystore.jks
-              CONTAINER_ID=\$(docker \
-                -H $DOCKER_HOST \
-                --tlsverify \
-                --tlscert=$DOCKER_CERT \
-                --tlskey=$DOCKER_KEY \
-                --tlscacert=$DOCKER_CA \
-                ps -aqf "name=^config-server")
-                echo "Container id is \$CONTAINER_ID"
-              if [ -z "\$CONTAINER_ID" ]; then
-                echo "No config-server container is running."
-              else
-                echo "Stopping config-server container with ID \$CONTAINER_ID."
-                docker \
-                  -H $DOCKER_HOST \
-                  --tlsverify \
-                  --tlscert=$DOCKER_CERT \
-                  --tlskey=$DOCKER_KEY \
-                  --tlscacert=$DOCKER_CA \
-                  stop \$CONTAINER_ID
-                sleep 10
-                docker \
-                  -H $DOCKER_HOST \
-                  --tlsverify \
-                  --tlscert=$DOCKER_CERT \
-                  --tlskey=$DOCKER_KEY \
-                  --tlscacert=$DOCKER_CA \
-                  rm \$CONTAINER_ID
-              fi
-              sleep 10
-              docker \
-                -H $DOCKER_HOST \
-                --tlsverify \
-                --tlscert=$DOCKER_CERT \
-                --tlskey=$DOCKER_KEY \
-                --tlscacert=$DOCKER_CA \
-                run \
-                --detach \
-                --tty \
-                --interactive \
-                --name=config-server \
-                --restart=unless-stopped \
-                -v config_server_data:/data \
-                -p 11061:8080 \
-                \$IMAGE:\$TAG
-              sleep 10
-              docker \
-                -H $DOCKER_HOST \
-                --tlsverify \
-                --tlscert=$DOCKER_CERT \
-                --tlskey=$DOCKER_KEY \
-                --tlscacert=$DOCKER_CA \
-                image prune -a -f
-          '''
-        }
-      }
-    }
-    stage('Deploy Release On Data') {
-      when {
-        allOf {
-          environment name: 'DEPLOY_RELEASE_ON_DATA', value: 'true'
-          branch 'main'
-        }
-      }
-      steps {
-        withCredentials([
-          string(credentialsId: 'data-docker-host', variable: 'DOCKER_HOST'),
-          file(credentialsId: 'data-docker-ca', variable: 'DOCKER_CA'),
-          file(credentialsId: 'data-docker-cert', variable: 'DOCKER_CERT'),
-          file(credentialsId: 'data-docker-key', variable: 'DOCKER_KEY'),
-          file(credentialsId: 'config-server-keystore', variable: 'KS'),
-          string(credentialsId: 'config-server-keystore-password', variable: 'KS_PASSWORD'),
-          usernamePassword(credentialsId: 'config-server-keystore-entry', usernameVariable: 'ALIAS', passwordVariable: 'SECRET'),
-//          usernamePassword(credentialsId: 'config-server-client', usernameVariable: 'CLIENT', passwordVariable: 'CLIENT_PASSWORD'),
-//          usernamePassword(credentialsId: 'config-server-actuator', usernameVariable: 'ACTUATOR', passwordVariable: 'ACTUATOR_PASSWORD'),
-//          usernamePassword(credentialsId: 'config-server-admin', usernameVariable: 'ADMIN', passwordVariable: 'ADMIN_PASSWORD')
-        ]) {
-          sh '''
-            #!/bin/bash
-            cp $KS target/keystore.jks
-            IMAGE=bremersee/config-server-configured-arm64
-            TAG=\$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-            docker \
-              -H $DOCKER_HOST \
-              --tlsverify \
-              --tlscert=$DOCKER_CERT \
-              --tlskey=$DOCKER_KEY \
-              --tlscacert=$DOCKER_CA \
-              build \
-              -t \$IMAGE:\$TAG \
-              -f DockerfileConfiguredArm64 \
-              --build-arg platform=arm64 \
-              --build-arg keystore=target/keystore.jks \
-              --build-arg keystoreType=jks \
-              --build-arg keystorePassword=$KS_PASSWORD \
-              --build-arg keystoreAlias=$ALIAS \
-              --build-arg keystoreSecret=$SECRET \
-              .
-              rm target/keystore.jks
-              CONTAINER_ID=\$(docker \
-                -H $DOCKER_HOST \
-                --tlsverify \
-                --tlscert=$DOCKER_CERT \
-                --tlskey=$DOCKER_KEY \
-                --tlscacert=$DOCKER_CA \
-                ps -aqf "name=^config-server")
-                echo "Container id is \$CONTAINER_ID"
-              if [ -z "\$CONTAINER_ID" ]; then
-                echo "No config-server container is running."
-              else
-                echo "Stopping config-server container with ID \$CONTAINER_ID."
-                docker \
-                  -H $DOCKER_HOST \
-                  --tlsverify \
-                  --tlscert=$DOCKER_CERT \
-                  --tlskey=$DOCKER_KEY \
-                  --tlscacert=$DOCKER_CA \
-                  stop \$CONTAINER_ID
-                sleep 10
-                docker \
-                  -H $DOCKER_HOST \
-                  --tlsverify \
-                  --tlscert=$DOCKER_CERT \
-                  --tlskey=$DOCKER_KEY \
-                  --tlscacert=$DOCKER_CA \
-                  rm \$CONTAINER_ID
-              fi
-              sleep 10
-              docker \
-                -H $DOCKER_HOST \
-                --tlsverify \
-                --tlscert=$DOCKER_CERT \
-                --tlskey=$DOCKER_KEY \
-                --tlscacert=$DOCKER_CA \
-                run \
-                --detach \
-                --tty \
-                --interactive \
-                --name=config-server \
-                --restart=unless-stopped \
-                -v config_server_data:/data \
-                -p 11061:8080 \
-                \$IMAGE:\$TAG
-              sleep 10
-              docker \
-                -H $DOCKER_HOST \
-                --tlsverify \
-                --tlscert=$DOCKER_CERT \
-                --tlskey=$DOCKER_KEY \
-                --tlscacert=$DOCKER_CA \
-                image prune -a -f
-          '''
-        }
-      }
-    }
-    stage('Deploy snapshot on config-server') {
-      when {
-        allOf {
-          branch 'develop'
-          environment name: 'DEPLOY_SNAPSHOT_ON_SERVER', value: 'true'
-        }
-      }
-      steps {
-        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server clean deploy'
-      }
-    }
-    stage('Deploy release on config-server') {
-      when {
-        allOf {
-          branch 'main'
-          environment name: 'DEPLOY_RELEASE_ON_SERVER', value: 'true'
-        }
-      }
-      steps {
-        sh 'mvn -B -DskipTests=true -Pdebian11,copy-to-and-install-on-config-server clean deploy'
-      }
-    }
-    stage('Deploy release on apt repository debian-bullseye') {
-      when {
-        allOf {
-          branch 'main'
-          environment name: 'DEPLOY_RELEASE_ON_REPOSITORY_DEBIAN_BULLSEYE', value: 'true'
-        }
-      }
-      steps {
-        sh 'mvn -B -DskipTests=true -Dhttp.protocol.expect-continue=true -Pdebian11,deploy-to-repo-debian-bullseye clean deploy'
+        sh '''
+          mvn -B -DskipTests=true -P build-system,debian,deploy-to-debian-repo clean deploy
+        '''
       }
     }
     stage('Clean') {
