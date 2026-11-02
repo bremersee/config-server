@@ -16,32 +16,17 @@
 
 package org.bremersee.configserver;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.util.StringUtils;
 
 /**
  * The web security properties.
  *
  * @author Christian Bremer
  */
-@ConfigurationProperties(prefix = "bremersee.access")
-@Getter
-@Setter
-@ToString(exclude = {"clientUserPassword", "actuatorUserPassword", "adminUserPassword"})
-@EqualsAndHashCode
-@NoArgsConstructor
+@ConfigurationProperties(prefix = "bremersee.config-server.authentication")
+@Data
 @Slf4j
 public class WebSecurityProperties {
 
@@ -51,111 +36,14 @@ public class WebSecurityProperties {
   public static final String ROLE_APPLICATION = "ROLE_CONFIG_SERVER_ADMIN";
 
   /**
-   * Required role to access actuator endpoints.
+   * The required role to access the config server.
    */
-  public static final String ROLE_ACTUATOR = "ROLE_ACTUATOR_ADMIN";
-
-  private static final String ROLE_APPLICATION_EXPRESSION =
-      "hasAuthority('" + ROLE_APPLICATION + "')";
-
-  private static final String ROLE_ACTUATOR_EXPRESSION = "hasAuthority('" + ROLE_ACTUATOR + "')";
-
-  private String applicationAccess =
-      "hasIpAddress('127.0.0.1/32') or hasIpAddress('::1') or " + ROLE_APPLICATION_EXPRESSION;
-
-  private String actuatorAccess =
-      "hasIpAddress('127.0.0.1/32') or hasIpAddress('::1') or " + ROLE_ACTUATOR_EXPRESSION;
-
-  private String clientUserName;
-
-  private String clientUserPassword;
-
-  private String actuatorUserName;
-
-  private String actuatorUserPassword;
-
-  private String adminUserName;
-
-  private String adminUserPassword;
+  private String configServerAccessRole = ROLE_APPLICATION;
 
   /**
-   * Build application access expression.
-   *
-   * @return the string
+   * Instantiates new web security properties.
    */
-  String buildApplicationAccess() {
-    return buildAccess(applicationAccess, ROLE_APPLICATION_EXPRESSION);
+  public WebSecurityProperties() {
+    super();
   }
-
-  /**
-   * Build actuator access expression.
-   *
-   * @return the string
-   */
-  String buildActuatorAccess() {
-    return buildAccess(actuatorAccess, ROLE_ACTUATOR_EXPRESSION);
-  }
-
-  private String buildAccess(final String access, final String expression) {
-    if (!StringUtils.hasText(access) || access.trim().equalsIgnoreCase("false")) {
-      return expression;
-    } else if (!access.contains(expression)) {
-      return access + " or " + expression;
-    }
-    return access;
-  }
-
-  /**
-   * Build users.
-   *
-   * @return the users
-   */
-  List<SimpleUser> buildUsers() {
-    List<SimpleUser> users = new ArrayList<>(3);
-    if (StringUtils.hasText(clientUserName)) {
-      users.add(new SimpleUser(clientUserName, clientUserPassword, ROLE_APPLICATION));
-    }
-    if (StringUtils.hasText(actuatorUserName)) {
-      users.add(new SimpleUser(actuatorUserName, actuatorUserPassword, ROLE_ACTUATOR));
-    }
-    if (StringUtils.hasText(adminUserName)) {
-      users.add(new SimpleUser(adminUserName, adminUserPassword, ROLE_APPLICATION, ROLE_ACTUATOR));
-    }
-    return users;
-  }
-
-  /**
-   * The simple user.
-   */
-  @Getter
-  @ToString(exclude = "password")
-  @EqualsAndHashCode(exclude = "password")
-  @NoArgsConstructor
-  static class SimpleUser implements Serializable, Principal {
-
-    @Serial
-    private static final long serialVersionUID = -1393400622632455935L;
-
-    private String name;
-
-    private String password;
-
-    private final List<String> authorities = new ArrayList<>();
-
-    /**
-     * Instantiates a new simple user.
-     *
-     * @param name the name
-     * @param password the password
-     * @param authorities the authorities
-     */
-    SimpleUser(String name, String password, String... authorities) {
-      this.name = name;
-      this.password = password;
-      if (authorities != null) {
-        Collections.addAll(this.authorities, authorities);
-      }
-    }
-  }
-
 }

@@ -24,8 +24,9 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -37,14 +38,11 @@ import org.springframework.test.util.TestSocketUtils;
  * @author Christian Bremer
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-    "spring.autoconfigure.exclude="
-        + "org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration",
     "spring.ldap.embedded.base-dn=dc=bremersee,dc=org",
     "spring.ldap.embedded.credential.username=uid=admin",
     "spring.ldap.embedded.credential.password=secret",
     "spring.ldap.embedded.ldif=classpath:schema.ldif",
     "spring.ldap.embedded.validation.enabled=false",
-    "bremersee.access.application-access='false'", // disable local access
     "bremersee.ldaptive.ldap-url=ldap://localhost:${spring.ldap.embedded.port}",
     "bremersee.ldaptive.connection-validator.search-request.base-dn=ou=people,dc=bremersee,dc=org",
     "bremersee.authentication.ldaptive.template=open_ldap",
@@ -58,36 +56,44 @@ import org.springframework.test.util.TestSocketUtils;
 })
 @ActiveProfiles({"test", "ldap"})
 @Slf4j
-public class ApplicationLdapTest {
+class ApplicationLdapTest {
 
-  private static final String user = "gustav";
+  private static final String USER = "uid=gustav,ou=people,dc=bremersee,dc=org";
 
-  private static final String pass = "topsecret";
+  private static final String PASS = "topsecret";
 
-  private static final String actuatorUser = "actuator";
+  private static final String ACTUATOR_USER = "uid=actuator,ou=people,dc=bremersee,dc=org";
 
-  private static final String actuatorPass = "topsecret";
+  private static final String ACTUATOR_PASS = "topsecret";
 
   /**
-   * The rest template.
+   * The rest template builder.
    */
   @Autowired
-  TestRestTemplate restTemplate;
+  RestTemplateBuilder restTemplateBuilder;
 
   /**
-   * Sets embedded ldap port.
+   * The local server port.
    */
-  @BeforeAll
-  static void setEmbeddedLdapPort() {
-    int embeddedLdapPort = TestSocketUtils.findAvailableTcpPort();
-    System.setProperty("spring.ldap.embedded.port", String.valueOf(embeddedLdapPort));
+  @LocalServerPort
+  int port;
+
+  /**
+   * Base url of the local server.
+   *
+   * @return the base url of the local server
+   */
+  String baseUrl() {
+    return "http://localhost:" + port;
   }
 
   /**
-   * Clean git base directory.
+   * Sets up.
    */
   @BeforeAll
-  static void cleanGitBaseDir() {
+  static void setUp() {
+    int embeddedLdapPort = TestSocketUtils.findAvailableTcpPort();
+    System.setProperty("spring.ldap.embedded.port", String.valueOf(embeddedLdapPort));
     File gitBaseDir = new File("./git-base-dir");
     if (gitBaseDir.exists() && gitBaseDir.isDirectory() && deleteDirectory(gitBaseDir)) {
       log.info("./git-base-dir was deleted");
@@ -112,8 +118,10 @@ public class ApplicationLdapTest {
     SoftAssertions softly = new SoftAssertions();
 
     String expected = "encrypt_me_i_am_a_secret";
-    ResponseEntity<String> response = restTemplate
-        .withBasicAuth(user, pass)
+    ResponseEntity<String> response = restTemplateBuilder
+        .basicAuthentication(USER, PASS)
+        .baseUri(baseUrl())
+        .build()
         .postForEntity("/encrypt", expected, String.class);
     softly
         .assertThat(response.getStatusCode())
@@ -123,8 +131,10 @@ public class ApplicationLdapTest {
         .isNotNull();
     String encrypted = response.getBody();
 
-    response = restTemplate
-        .withBasicAuth(user, pass)
+    response = restTemplateBuilder
+        .basicAuthentication(USER, PASS)
+        .baseUri(baseUrl())
+        .build()
         .postForEntity("/decrypt", encrypted, String.class);
     softly
         .assertThat(response.getStatusCode())
@@ -144,7 +154,9 @@ public class ApplicationLdapTest {
    */
   @Test
   void fetchHealth() {
-    ResponseEntity<String> response = restTemplate
+    ResponseEntity<String> response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .build()
         .getForEntity("/actuator/health", String.class);
     assertThat(response.getStatusCode())
         .isEqualTo(HttpStatus.OK);
@@ -155,31 +167,38 @@ public class ApplicationLdapTest {
    */
   @Test
   void fetchInfo() {
-    ResponseEntity<String> response = restTemplate
+    ResponseEntity<String> response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .build()
         .getForEntity("/actuator/info", String.class);
     assertThat(response.getStatusCode())
         .isEqualTo(HttpStatus.OK);
   }
 
   /**
-   * Fetch metrics.
+   * Fetch beans.
    */
   @Test
-  void fetchMetrics() {
-    ResponseEntity<String> response = restTemplate
-        .withBasicAuth(actuatorUser, actuatorPass)
-        .getForEntity("/actuator/metrics", String.class);
+  void fetchBeans() {
+    ResponseEntity<String> response = restTemplateBuilder
+        .basicAuthentication(ACTUATOR_USER, ACTUATOR_PASS)
+        .baseUri(baseUrl())
+        .build()
+        .getForEntity("/actuator/beans", String.class);
     assertThat(response.getStatusCode())
         .isEqualTo(HttpStatus.OK);
   }
 
   /**
-   * Fetch metrics and expect unauthorized.
+   * Fetch beans and expect unauthorized.
    */
   @Test
-  void fetchMetricsAndExpectUnauthorized() {
-    ResponseEntity<String> response = restTemplate
-        .getForEntity("/actuator/metrics", String.class);
+  void fetchBeansAndExpectUnauthorized() {
+    ResponseEntity<String> response = restTemplateBuilder
+        .baseUri(baseUrl())
+        .errorHandler(resp -> resp.getStatusCode().is5xxServerError())
+        .build()
+        .getForEntity("/actuator/beans", String.class);
     assertThat(response.getStatusCode())
         .isEqualTo(HttpStatus.UNAUTHORIZED);
   }
@@ -189,8 +208,10 @@ public class ApplicationLdapTest {
    */
   @Test
   void fetchTestConfig() {
-    ResponseEntity<String> response = restTemplate
-        .withBasicAuth(user, pass)
+    ResponseEntity<String> response = restTemplateBuilder
+        .basicAuthentication(USER, PASS)
+        .baseUri(baseUrl())
+        .build()
         .getForEntity("/test-config/default", String.class);
     assertThat(response.getBody())
         .contains("testkey", "testvalue");

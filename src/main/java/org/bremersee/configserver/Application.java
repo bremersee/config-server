@@ -30,6 +30,13 @@ import org.springframework.cloud.config.server.EnableConfigServer;
 public class Application {
 
   /**
+   * Instantiates a new application.
+   */
+  public Application() {
+    super();
+  }
+
+  /**
    * Starts the spring boot application.
    *
    * @param args application arguments

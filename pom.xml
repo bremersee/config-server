@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.bremersee</groupId>
     <artifactId>common-service-parent</artifactId>
-    <version>3.0.1</version>
+    <version>6.1.2</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <artifactId>config-server</artifactId>
-  <version>2.0.0</version>
+  <version>2.1.0</version>
   <packaging>jar</packaging>
 
   <name>config-server</name>
@@ -25,16 +25,14 @@
 
     <start-class>org.bremersee.configserver.Application</start-class>
 
-    <spring-integration.version>0.0.1</spring-integration.version>
+    <java.version>25</java.version>
 
     <!--suppress UnresolvedMavenProperty -->
-    <!--
+    <debVersion>
+      ${project.version}-${maven.build.timestamp}+${buildNumber}
+    </debVersion>
     <debBaseName>
-      spring-config-server_${project.version}-${maven.build.timestamp}+${scmBranch}+${buildNumber}_all
-    </debBaseName>
-    -->
-    <debBaseName>
-      spring-config-server_${project.version}-${maven.build.timestamp}+${buildNumber}_all
+      config-server_${debVersion}_all
     </debBaseName>
     <debName>${debBaseName}.deb</debName>
     <debChangesName>${debBaseName}.changes</debChangesName>
@@ -47,7 +45,7 @@
       <organization>bremersee.org</organization>
       <organizationUrl>https://bremersee.org</organizationUrl>
       <email>christian@bremersee.org</email>
-      <timezone>+1</timezone>
+      <timezone>Europe/Berlin</timezone>
       <roles>
         <role>Developer</role>
       </roles>
@@ -98,19 +96,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-config</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-config-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
@@ -118,23 +103,28 @@
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-restclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-config-server</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.bremersee</groupId>
       <artifactId>spring-integration-boot-autoconfigure</artifactId>
-      <version>${spring-integration.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bremersee</groupId>
       <artifactId>spring-integration-security-ldaptive</artifactId>
-      <version>${spring-integration.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-configuration-processor</artifactId>
-      <optional>true</optional>
-    </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -142,7 +132,22 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
+      <artifactId>spring-boot-starter-actuator-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-ldap</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-restclient-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -166,7 +171,6 @@
         <plugin>
           <artifactId>jdeb</artifactId>
           <groupId>org.vafer</groupId>
-          <version>1.5</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -174,9 +178,9 @@
 
   <profiles>
     <profile>
-      <id>debian11</id>
+      <id>debian</id>
       <properties>
-        <assembly-config>debian11.xml</assembly-config>
+        <assembly-config>debian.xml</assembly-config>
       </properties>
       <build>
         <finalName>config-server</finalName>
@@ -184,25 +188,19 @@
           <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
-            <version>${spring-boot.version}</version>
-            <configuration>
-              <executable>true</executable>
-            </configuration>
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>${maven-assembly-plugin.version}</version>
             <configuration>
               <descriptors>
                 <descriptor>${basedir}/src/assembly/${assembly-config}</descriptor>
               </descriptors>
-              <!-- <tarLongFileMode>posix</tarLongFileMode> -->
               <overrideGid>100</overrideGid>
             </configuration>
             <executions>
               <execution>
-                <id>debian11-archive</id>
+                <id>debian-archive</id>
                 <phase>package</phase>
                 <goals>
                   <goal>single</goal>
@@ -215,7 +213,7 @@
             <groupId>org.vafer</groupId>
             <executions>
               <execution>
-                <id>debian11-deb</id>
+                <id>debian-deb</id>
                 <phase>package</phase>
                 <goals>
                   <goal>jdeb</goal>
@@ -224,10 +222,10 @@
                   <verbose>true</verbose>
                   <deb>${project.build.directory}/${debName}</deb>
                   <changesOut>${project.build.directory}/${debChangesName}</changesOut>
-                  <controlDir>${basedir}/src/assembly/debian11/control</controlDir>
+                  <controlDir>${basedir}/src/assembly/debian/control</controlDir>
                   <dataSet>
                     <data>
-                      <src>${project.build.directory}/config-server-debian11.tar.gz</src>
+                      <src>${project.build.directory}/config-server-debian.tar.gz</src>
                       <type>archive</type>
                       <mapper>
                         <type>perm</type>
@@ -244,30 +242,34 @@
     </profile>
 
     <profile>
-      <id>deploy-to-repo-debian-bullseye</id>
+      <id>deploy-to-debian-repo</id>
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
       <build>
         <plugins>
-          <!--+
-              | wagon-http only supports http method put
-              | uploading to nexus apt works only with a workaround in haproxy
-              +-->
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
-            <artifactId>wagon-maven-plugin</artifactId>
+            <artifactId>exec-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>upload-to-debian-bullseye</id>
+                <id>deploy-to-debian-repo-execution</id>
                 <phase>deploy</phase>
                 <goals>
-                  <goal>upload-single</goal>
+                  <goal>exec</goal>
                 </goals>
                 <configuration>
-                  <serverId>bremersee-apt</serverId>
-                  <fromFile>${project.build.directory}/${debName}</fromFile>
-                  <url>https://nexus.bremersee.org/repository/debian-bullseye</url>
+                  <executable>${repreproBinary}</executable>
+                  <workingDirectory>${project.build.directory}</workingDirectory>
+                  <arguments>
+                    <argument>--basedir</argument>
+                    <argument>${debianRepoDir}</argument>
+                    <argument>-C</argument>
+                    <argument>main</argument>
+                    <argument>include</argument>
+                    <argument>stable</argument>
+                    <argument>${debChangesName}</argument>
+                  </arguments>
                 </configuration>
               </execution>
             </executions>
@@ -276,85 +278,5 @@
       </build>
     </profile>
 
-    <profile>
-      <id>apt-get-on-config-server</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>wagon-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>install-on-config-server</id>
-                <phase>deploy</phase>
-                <goals>
-                  <goal>sshexec</goal>
-                </goals>
-                <configuration>
-                  <serverId>bremersee-dpkg</serverId>
-                  <url>scp://config.eixe.bremersee.org/home/giacomo</url>
-                  <commands>
-                    <command>sudo -n /usr/bin/apt-get update</command>
-                    <command>sudo -n /usr/bin/env DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -yq install spring-config-server</command>
-                  </commands>
-                  <displayCommandOutputs>true</displayCommandOutputs>
-                  <failOnError>false</failOnError>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>copy-to-and-install-on-config-server</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>wagon-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-to-config-server</id>
-                <phase>deploy</phase>
-                <goals>
-                  <goal>upload-single</goal>
-                </goals>
-                <configuration>
-                  <serverId>bremersee-dpkg</serverId>
-                  <url>scp://config.eixe.bremersee.org/home/giacomo</url>
-                  <fromFile>${project.build.directory}/${debName}</fromFile>
-                  <toFile>spring-config-server.deb</toFile>
-                </configuration>
-              </execution>
-              <execution>
-                <id>dpkg-on-config-server</id>
-                <phase>deploy</phase>
-                <goals>
-                  <goal>sshexec</goal>
-                </goals>
-                <configuration>
-                  <serverId>bremersee-dpkg</serverId>
-                  <url>scp://config.eixe.bremersee.org/home/giacomo</url>
-                  <commands>
-                    <command>sudo -n /usr/bin/dpkg -i /home/giacomo/spring-config-server.deb</command>
-                    <command>rm /home/giacomo/spring-config-server.deb</command>
-                  </commands>
-                  <displayCommandOutputs>true</displayCommandOutputs>
-                  <failOnError>true</failOnError>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
   </profiles>
 </project>

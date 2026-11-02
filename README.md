@@ -11,53 +11,40 @@ This config server is more or less a plain Spring Cloud Config Server:
 </dependency>
 ```
 
-It's resources are protected with Basic Authentication. You can define three users: 
+Its resources are protected with Basic Authentication. You can define three users: 
 A client user can encrypt and decrypt property values and retrieve configuration,
-an actuator user can access the actuator endpoints and an administration user can do both.
+an actuator user can access the actuator endpoints, and an administration user can do both.
 
 ```yaml
 bremersee:
-  access:
-    application-access: hasIpAddress('127.0.0.1') or hasIpAddress('::1')
-    actuator-access: hasIpAddress('127.0.0.1') or hasIpAddress('::1')
-    client-user-name: ${CLIENT_USER:user}
-    client-user-password: ${CLIENT_PASSWORD:changeit}
-    actuator-user-name: ${ACTUATOR_USER:actuator}
-    actuator-user-password: ${ACTUATOR_PASSWORD:changeit}
-    admin-user-name: ${ADMIN_USER:admin}
-    admin-user-password: ${ADMIN_PASSWORD:changeit}
+  authentication:
+    in-memory:
+      enabled: true
+      users:
+        - name: config
+          password: changeit
+          authorities:
+            - ROLE_CONFIG_SERVER_ADMIN
+        - name: actuator
+          password: changeit
+          authorities:
+            - ROLE_ACTUATOR
+        - name: admin
+          password: changeit
+          authorities:
+            - ROLE_CONFIG_SERVER_ADMIN
+            - ROLE_ACTUATOR_ADMIN
 ```
-
-Via 'application-access' and 'actuator-access' you can grant access to the resources of the server 
-without authentication. The default configuration allows access from localhost without authentication.
-The default behaviour can be disabled by setting 'application-access' and/or 'actuator-access' to an
-empty value ('') or to 'false' (default).
 
 ## Configuration
 
-### Key store for encryption and decryption
+### Key for encryption and decryption
 
-The key store for encryption and decryption can be configured with:
+The key for encryption and decryption can be configured with:
 
 ```yaml
 encrypt:
-  key-store:
-    location: ${ENCRYPTION_KEYSTORE_LOCATION:classpath:/encryption.jks}
-    type: ${ENCRYPTION_KEYSTORE_TYPE:jks}
-    password: ${ENCRYPTION_KEYSTORE_PASSWORD:changeit}
-    alias: ${ENCRYPTION_KEYSTORE_ALIAS:encryption}
-    secret: ${ENCRYPTION_KEYSTORE_SECRET:changeit}
-```
-
-### Server port and context path
-
-The server port and the context path can be set with:
-
-```yaml
-server:
-  port: ${SERVER_PORT:8080}
-  servlet:
-    context-path: ${CONTEXT_PATH:/}
+  key: changeit
 ```
 
 ### Location of the configuration files
@@ -79,11 +66,11 @@ files) is:
 $ java -jar target/config-server.jar
 ```
 
-For more information have a look into the Spring Boot documentation.
+For more information, have a look into the Spring Boot documentation.
 
 ### Encryption of values
 
-To encrypt a value of your configuration file you have to post the raw value to the servers 
+To encrypt a value of your configuration file, you have to post the raw value to the server's 
 encryption endpoint:
 
 ```bash
@@ -180,6 +167,4 @@ The answer will be:
 
 ## Maven Site
 
-- [Release](https://bremersee.github.io/config-server/index.html)
-
-- [Snapshot](https://nexus.bremersee.org/repository/maven-sites/config-server/2.0.0-SNAPSHOT/index.html)
+[Maven-Site](https://bremersee.github.io/config-server/2.1.0/index.html)
