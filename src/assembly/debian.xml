@@ -16,7 +16,7 @@
         </file>
         <file>
             <source>src/assembly/debian/config-server.conf</source>
-            <outputDirectory>etc/config-server</outputDirectory>
+            <outputDirectory>etc</outputDirectory>
             <filtered>false</filtered>
             <fileMode>600</fileMode>
         </file>
