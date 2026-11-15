@@ -169,7 +169,7 @@ spring:
     config:
       server:
         git:
-          basedir: /var/lib/config-server/basedir
+          basedir: /var/lib/config-server/data
 
 logging:
   level:
