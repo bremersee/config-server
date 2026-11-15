@@ -7,10 +7,10 @@ pipeline {
     NAME='config-server'
     DOCKER_IMAGE = 'bremersee/config-server'
     DOCKER_HOSTS = 'app1 app2'
-    DOCKER_PUSH=true
-    DEPLOY_ON_APP_SERVER=true
-    SITE = true
-    DEPLOY_TO_DEBIAN_REPO = true
+    DOCKER_PUSH=false
+    DEPLOY_ON_APP_SERVER=false
+    SITE = false
+    DEPLOY_TO_DEBIAN_REPO = false
     CLEAN = true
   }
   tools {
