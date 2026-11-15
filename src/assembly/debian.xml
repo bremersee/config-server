@@ -16,7 +16,7 @@
         </file>
         <file>
             <source>src/assembly/debian/config-server.conf</source>
-            <outputDirectory>var/lib/config-server</outputDirectory>
+            <outputDirectory>etc</outputDirectory>
             <filtered>false</filtered>
             <fileMode>600</fileMode>
         </file>
@@ -31,7 +31,7 @@
             <outputDirectory>var/lib/config-server</outputDirectory>
             <destName>config-server.jar</destName>
             <filtered>false</filtered>
-            <fileMode>755</fileMode>
+            <fileMode>644</fileMode>
         </file>
     </files>
 </assembly>

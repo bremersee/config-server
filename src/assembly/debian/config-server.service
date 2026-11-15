@@ -4,8 +4,9 @@ After=syslog.target
 
 [Service]
 User=cfg-srv
+EnvironmentFile=/etc/config-server.conf
 WorkingDirectory=/var/lib/config-server
-ExecStart=/var/lib/config-server/config-server.jar
+ExecStart=java -jar -Xmx512m -Djava.security.egd=file:/dev/./urandom -Dspring.config.location=/var/lib/config-server/application.yml -Dspring.profiles.active=in-memory,debian config-server.jar
 SuccessExitStatus=1 4 3
 
 [Install]

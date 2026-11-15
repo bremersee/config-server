@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.bremersee</groupId>
     <artifactId>common-service-parent</artifactId>
-    <version>6.1.2</version>
+    <version>6.1.7</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <artifactId>config-server</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0</version>
   <packaging>jar</packaging>
 
   <name>config-server</name>
@@ -25,8 +25,6 @@
 
     <start-class>org.bremersee.configserver.Application</start-class>
 
-    <java.version>25</java.version>
-
     <!--suppress UnresolvedMavenProperty -->
     <debVersion>
       ${project.version}-${maven.build.timestamp}+${buildNumber}
@@ -37,6 +35,29 @@
     <debName>${debBaseName}.deb</debName>
     <debChangesName>${debBaseName}.changes</debChangesName>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>bremersee-releases</id>
+      <url>https://mvn-repo.eixe.bremersee.org/releases</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>bremersee-snapshots</id>
+      <url>https://mvn-repo.eixe.bremersee.org/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <developers>
     <developer>
@@ -80,17 +101,15 @@
   <distributionManagement>
     <repository>
       <id>bremersee-releases</id>
-      <url>https://nexus.bremersee.org/repository/maven-releases</url>
+      <url>https://mvn-repo.eixe.bremersee.org/releases</url>
     </repository>
     <snapshotRepository>
       <id>bremersee-snapshots</id>
-      <url>https://nexus.bremersee.org/repository/maven-snapshots</url>
+      <url>https://mvn-repo.eixe.bremersee.org/snapshots</url>
     </snapshotRepository>
     <site>
       <id>bremersee-sites</id>
-      <url>
-        dav:https://nexus.bremersee.org/repository/maven-sites/config-server/${project.version}
-      </url>
+      <url>https://webdav.eixe.bremersee.org/maven-sites/config-server/${project.version}</url>
     </site>
   </distributionManagement>
 
